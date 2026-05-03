@@ -1,14 +1,26 @@
-const DEVTOOLS_ORIGIN = 'http://127.0.0.1:8082'
-const DEVICE_ORIGIN = 'http://192.168.1.126:8082'
-const ENABLE_LOCAL_TEST_LOGIN = true
+const LOCAL_DEVTOOLS_ORIGIN = 'http://127.0.0.1:8082'
+const LOCAL_DEVICE_ORIGIN = 'http://192.168.1.126:8082'
+const CLOUD_ORIGIN = 'https://replace-with-your-cloud-host'
+
+function resolveMiniProgramEnvVersion() {
+  const accountInfo = wx.getAccountInfoSync ? wx.getAccountInfoSync() : null
+  const miniProgram = accountInfo && accountInfo.miniProgram ? accountInfo.miniProgram : null
+  return (miniProgram && miniProgram.envVersion) || 'develop'
+}
+
+const MINI_PROGRAM_ENV_VERSION = resolveMiniProgramEnvVersion()
+const ENABLE_LOCAL_TEST_LOGIN = MINI_PROGRAM_ENV_VERSION === 'develop'
 
 function resolveOrigin() {
+  if (MINI_PROGRAM_ENV_VERSION === 'trial' || MINI_PROGRAM_ENV_VERSION === 'release') {
+    return CLOUD_ORIGIN
+  }
   const deviceInfo = wx.getDeviceInfo ? wx.getDeviceInfo() : null
   const platform = deviceInfo && deviceInfo.platform ? deviceInfo.platform.toLowerCase() : ''
   if (platform === 'devtools') {
-    return DEVTOOLS_ORIGIN
+    return LOCAL_DEVTOOLS_ORIGIN
   }
-  return DEVICE_ORIGIN
+  return LOCAL_DEVICE_ORIGIN
 }
 
 function normalizeRequestError(error, timeoutMessage, fallbackMessage) {

@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: ${PORT:8082}
   servlet:
     encoding:
       charset: UTF-8
@@ -43,22 +43,22 @@ spring:
 
 app:
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:*}
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:}
   jwt:
-    secret: ${APP_JWT_SECRET:local-jwt-secret-change-me}
+    secret: ${APP_JWT_SECRET:}
     expire-hours: ${APP_JWT_EXPIRE_HOURS:72}
   super-admin:
-    web-username: ${APP_SUPER_ADMIN_USERNAME:superadmin}
-    web-password: ${APP_SUPER_ADMIN_PASSWORD:123456}
+    web-username: ${APP_SUPER_ADMIN_USERNAME:}
+    web-password: ${APP_SUPER_ADMIN_PASSWORD:}
   local-test-login:
-    enabled: ${APP_LOCAL_TEST_LOGIN_ENABLED:true}
+    enabled: ${APP_LOCAL_TEST_LOGIN_ENABLED:false}
     volunteer-open-id: ${APP_LOCAL_TEST_LOGIN_OPEN_ID:local_test_volunteer}
     volunteer-name: ${APP_LOCAL_TEST_LOGIN_NAME:LocalTestVolunteer}
   demo-data:
-    enabled: ${APP_DEMO_DATA_ENABLED:true}
+    enabled: ${APP_DEMO_DATA_ENABLED:false}
   sensitive:
-    encryption-key: ${APP_SENSITIVE_ENCRYPTION_KEY:1234567890abcdef}
-    hash-salt: ${APP_SENSITIVE_HASH_SALT:volunteer-local-salt}
+    encryption-key: ${APP_SENSITIVE_ENCRYPTION_KEY:}
+    hash-salt: ${APP_SENSITIVE_HASH_SALT:}
   login-verification:
     enabled: ${APP_LOGIN_VERIFICATION_ENABLED:false}
     code-expire-minutes: ${APP_LOGIN_VERIFICATION_EXPIRE_MINUTES:5}
