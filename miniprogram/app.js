@@ -1,6 +1,6 @@
 const LOCAL_DEVTOOLS_ORIGIN = 'http://127.0.0.1:8082'
 const LOCAL_DEVICE_ORIGIN = 'http://192.168.1.126:8082'
-const CLOUD_ORIGIN = 'https://replace-with-your-cloud-host'
+const CLOUD_ORIGIN = 'https://springboot-hyu9-253564-7-1428189419.sh.run.tcloudbase.com'
 
 function resolveMiniProgramEnvVersion() {
   const accountInfo = wx.getAccountInfoSync ? wx.getAccountInfoSync() : null
