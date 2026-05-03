@@ -1,0 +1,11 @@
+.input:last-of-type {
+  margin-bottom: 0;
+}
+
+.surface {
+  margin-bottom: 24rpx;
+}
+
+.surface sensitive-field + sensitive-field {
+  margin-top: 24rpx;
+}

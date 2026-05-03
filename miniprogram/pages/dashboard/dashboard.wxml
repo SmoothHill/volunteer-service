@@ -1,0 +1,195 @@
+<view class="page" wx:if="{{profile}}">
+  <shipping-form-dialog
+    visible="{{shippingDialogVisible}}"
+    form="{{shippingForm}}"
+    bind:change="onShippingFormChange"
+    bind:cancel="onShippingDialogCancel"
+    bind:confirm="onShippingDialogConfirm"
+  />
+
+  <view class="hero-card">
+    <view class="title">{{profile.name}}</view>
+    <view class="sub-title">个人服务档案与实名认证中心</view>
+    <view class="chip-row">
+      <view class="tag-chip tag-primary">{{profile.displayRole}}</view>
+      <view class="tag-chip {{profile.verified ? 'tag-success' : 'tag-warning'}}">{{profile.displayVerifiedStatus}}</view>
+      <view class="tag-chip tag-default">{{profile.totalPoints}} 积分</view>
+      <view class="tag-chip tag-warning" wx:if="{{profile.badgeName}}">{{profile.badgeName}}</view>
+    </view>
+
+    <view class="stats-grid">
+      <view class="stat-item">
+        <view class="stat-label">累计服务时长</view>
+        <view class="stat-value">{{profile.totalHours}}</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-label">信用分</view>
+        <view class="stat-value">{{profile.creditScore}}</view>
+      </view>
+    </view>
+
+    <view class="surface">
+      <view class="section-title">实名认证</view>
+      <sensitive-field
+        label="真实姓名"
+        value="{{profile.realName}}"
+        masked-value="{{profile.displayRealName}}"
+        visible="{{visibility.realName}}"
+        empty-text="未认证"
+        data-field="realName"
+        bind:toggle="toggleSensitive"
+      />
+      <sensitive-field
+        label="身份证号"
+        value="{{profile.idCardNo}}"
+        masked-value="{{profile.maskedIdCardNo}}"
+        visible="{{visibility.idCardNo}}"
+        empty-text="未填写"
+        data-field="idCardNo"
+        bind:toggle="toggleSensitive"
+      />
+      <sensitive-field
+        label="志愿者号"
+        value="{{profile.volunteerCardNo}}"
+        masked-value="{{profile.maskedVolunteerCardNo}}"
+        visible="{{visibility.volunteerCardNo}}"
+        empty-text="认证后可查看"
+        data-field="volunteerCardNo"
+        bind:toggle="toggleSensitive"
+      />
+      <view class="button-row">
+        <button class="native-btn {{profile.verified ? 'outline' : 'primary'}}" bindtap="goVerify">
+          {{profile.verified ? '更新认证信息' : '去实名认证'}}
+        </button>
+      </view>
+    </view>
+
+    <view class="button-row">
+      <button class="native-btn outline" bindtap="goHome">返回首页</button>
+      <button class="native-btn outline" bindtap="openMessages">消息提醒</button>
+      <button class="native-btn primary" wx:if="{{showServiceTabs}}" bindtap="openAnnualReport">年度服务报告</button>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{!showServiceTabs}}">
+    <view class="section-title">身份说明</view>
+    <view class="meta">超级管理员当前主要在这里维护实名认证与身份信息。</view>
+    <view class="meta">活动发布、证据中心、异常记录等全局管理功能，请继续在管理端和超级管理员后台操作。</view>
+  </view>
+
+  <view class="tabs-block" wx:if="{{showServiceTabs}}">
+    <view class="native-tabs">
+      <view class="native-tab {{currentTab === 'records' ? 'native-tab-active' : ''}}" data-tab="records" bindtap="switchTab">服务记录</view>
+      <view class="native-tab {{currentTab === 'store' ? 'native-tab-active' : ''}}" data-tab="store" bindtap="switchTab">积分商城</view>
+      <view class="native-tab {{currentTab === 'redemptions' ? 'native-tab-active' : ''}}" data-tab="redemptions" bindtap="switchTab">兑换记录</view>
+      <view class="native-tab {{currentTab === 'supplements' ? 'native-tab-active' : ''}}" data-tab="supplements" bindtap="switchTab">补签申请</view>
+    </view>
+
+    <view class="tabs-panel" wx:if="{{currentTab === 'records'}}">
+      <block wx:if="{{records.length}}">
+        <block wx:for="{{records}}" wx:key="recordKey">
+          <view class="list-card">
+            <view class="list-card-title">{{item.displayActivityTitle}}</view>
+            <view class="chip-row">
+              <view class="tag-chip tag-primary">{{item.displayStatus}}</view>
+              <view class="tag-chip tag-default">{{item.displayActivityCategory}}</view>
+              <view class="tag-chip tag-success">{{item.displayRewardStatus}}</view>
+            </view>
+            <view class="meta">签到时间：{{item.displayCheckInTime}}</view>
+            <view class="meta">签退时间：{{item.displayCheckOutTime}}</view>
+            <view class="meta">服务时长：{{item.serviceHours || 0}} 小时</view>
+            <view class="meta">获得积分：{{item.earnedPoints || 0}}</view>
+            <view class="meta" wx:if="{{item.displayServiceRating}}">服务评价：{{item.displayServiceRating}}</view>
+            <view class="meta" wx:if="{{item.pointBreakdown}}">积分明细：{{item.pointBreakdown}}</view>
+
+            <view class="button-row" wx:if="{{item.certificateUrl || item.canExportProof}}">
+              <button
+                wx:if="{{item.certificateUrl}}"
+                class="native-btn outline"
+                data-url="{{item.certificateUrl}}"
+                bindtap="previewCertificate"
+              >
+                查看电子证书
+              </button>
+              <button
+                wx:if="{{item.certificateUrl}}"
+                class="native-btn outline"
+                data-url="{{item.certificateUrl}}"
+                bindtap="exportElectronicCertificate"
+              >
+                导出电子证书
+              </button>
+              <button
+                wx:if="{{item.canExportProof}}"
+                class="native-btn primary"
+                data-record-id="{{item.recordKey}}"
+                bindtap="openCertificateProof"
+              >
+                导出志愿服务证明
+              </button>
+            </view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="card empty-state">当前还没有服务记录。</view>
+    </view>
+
+    <view class="tabs-panel" wx:if="{{currentTab === 'store'}}">
+      <block wx:if="{{storeItems.length}}">
+        <block wx:for="{{storeItems}}" wx:key="id">
+          <view class="list-card">
+            <view class="list-card-title">{{item.name}}</view>
+            <view class="chip-row">
+              <view class="tag-chip tag-primary">{{item.category}}</view>
+              <view class="tag-chip tag-warning">{{item.pointsCost}} 积分</view>
+              <view class="tag-chip tag-default">库存 {{item.stock}}</view>
+            </view>
+            <view class="meta">说明：{{item.description}}</view>
+            <button class="native-btn primary" data-id="{{item.id}}" bindtap="redeem">立即兑换</button>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="card empty-state">商城暂时没有可兑换商品。</view>
+    </view>
+
+    <view class="tabs-panel" wx:if="{{currentTab === 'redemptions'}}">
+      <block wx:if="{{redemptions.length}}">
+        <block wx:for="{{redemptions}}" wx:key="id">
+          <view class="list-card">
+            <view class="list-card-title">{{item.itemName}}</view>
+            <view class="chip-row">
+              <view class="tag-chip tag-primary">{{item.displayStatus}}</view>
+              <view class="tag-chip tag-default">数量 {{item.quantity}}</view>
+              <view class="tag-chip tag-warning">{{item.displayDeliveryType}}</view>
+            </view>
+            <view class="meta">消耗积分：{{item.pointsCost}}</view>
+            <view class="meta">提交时间：{{item.displayCreatedAt}}</view>
+            <view class="meta" wx:if="{{item.deliveryType === 'PHYSICAL' && item.recipientName}}">收货人：{{item.recipientName}}</view>
+            <view class="meta" wx:if="{{item.deliveryType === 'PHYSICAL' && item.maskedRecipientPhone}}">手机号：{{item.maskedRecipientPhone}}</view>
+            <view class="meta" wx:if="{{item.deliveryType === 'PHYSICAL' && item.recipientAddress}}">收货地址：{{item.recipientAddress}}</view>
+            <view class="meta" wx:if="{{item.deliveryRemark}}">发放备注：{{item.deliveryRemark}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="card empty-state">你还没有兑换记录。</view>
+    </view>
+
+    <view class="tabs-panel" wx:if="{{currentTab === 'supplements'}}">
+      <block wx:if="{{supplements.length}}">
+        <block wx:for="{{supplements}}" wx:key="id">
+          <view class="list-card">
+            <view class="list-card-title">{{item.displayType}}</view>
+            <view class="chip-row">
+              <view class="tag-chip tag-primary">{{item.displayStatus}}</view>
+              <view class="tag-chip tag-default">{{item.displayActivityTitle}}</view>
+            </view>
+            <view class="meta">申请时间：{{item.displayRequestedTime}}</view>
+            <view class="meta">原因：{{item.reason}}</view>
+            <view class="meta">审核意见：{{item.reviewComment || '待审核'}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="card empty-state">当前没有补签申请记录。</view>
+    </view>
+  </view>
+</view>

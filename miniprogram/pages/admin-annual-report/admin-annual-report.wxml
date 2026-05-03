@@ -1,0 +1,149 @@
+<view class="page">
+  <view class="card empty-state" wx:if="{{loading}}">
+    正在加载管理年度数据...
+  </view>
+
+  <block wx:if="{{adminReport && !loading}}">
+    <view class="hero-card">
+      <view class="title">{{adminReport.year}} 管理年报</view>
+      <view class="sub-title">{{adminReport.displaySummaryText}}</view>
+
+      <view class="surface">
+        <view class="section-title">年份筛选</view>
+        <picker mode="selector" range="{{yearOptions}}" value="{{selectedYearIndex}}" bindchange="onYearChange">
+          <view class="picker-field">{{yearOptions[selectedYearIndex]}} 年</view>
+        </picker>
+      </view>
+
+      <view class="stats-grid">
+        <view class="stat-item">
+          <view class="stat-label">年度举办活动数</view>
+          <view class="stat-value">{{adminReport.totalActivities}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">带动服务人次</view>
+          <view class="stat-value">{{adminReport.totalServiceCount}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">带动服务时长</view>
+          <view class="stat-value">{{adminReport.totalServiceHours}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">覆盖社区数</view>
+          <view class="stat-value">{{adminReport.coveredCommunityCount}}</view>
+        </view>
+      </view>
+
+      <view class="surface">
+        <view class="section-title">年度亮点</view>
+        <view class="meta">最热社区：{{adminReport.displayHottestCommunity}}</view>
+        <view class="meta">主要活动类别：{{adminReport.displayTopCategory}}</view>
+        <view class="meta">活跃月份：{{adminReport.activeMonths}}</view>
+      </view>
+
+      <view class="button-row">
+        <button class="native-btn outline" bindtap="goBack">返回管理端</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">管理员排行榜</view>
+      <block wx:if="{{adminLeaderboard.length}}">
+        <block wx:for="{{adminLeaderboard}}" wx:key="userId">
+          <view class="list-card">
+            <view class="list-card-title">{{index + 1}}. {{item.userName}}</view>
+            <view class="meta">年度活动：{{item.totalActivities}} 场</view>
+            <view class="meta">服务人次：{{item.totalServiceCount}}</view>
+            <view class="meta">服务时长：{{item.displayServiceHours}} 小时</view>
+            <view class="meta">覆盖社区：{{item.coveredCommunityCount}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">当前年度还没有管理员排行榜数据。</view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">社区热力图</view>
+      <map
+        wx:if="{{adminReport.communityMap.hasMap}}"
+        class="annual-map"
+        latitude="{{adminReport.communityMap.latitude}}"
+        longitude="{{adminReport.communityMap.longitude}}"
+        scale="{{adminReport.communityMap.scale}}"
+        markers="{{adminReport.communityMap.markers}}"
+        include-points="{{adminReport.communityMap.includePoints}}"
+        show-location="{{false}}"
+      />
+      <view wx:else class="empty-state">当前年度还没有可展示的社区热力图。</view>
+      <block wx:if="{{adminReport.communityHeatmap.length}}">
+        <block wx:for="{{adminReport.communityHeatmap}}" wx:key="activityTitle">
+          <view class="list-card">
+            <view class="list-card-title">{{item.activityTitle}}</view>
+            <view class="meta">热力值：{{item.displayIntensity}}</view>
+            <view class="meta">活动缺口：{{item.displayGapCount}}</view>
+            <view class="meta">{{item.displayAreaTag}}</view>
+          </view>
+        </block>
+      </block>
+    </view>
+
+    <view class="card">
+      <view class="section-title">举办活动热力图</view>
+      <map
+        wx:if="{{adminReport.activityMap.hasMap}}"
+        class="annual-map"
+        latitude="{{adminReport.activityMap.latitude}}"
+        longitude="{{adminReport.activityMap.longitude}}"
+        scale="{{adminReport.activityMap.scale}}"
+        markers="{{adminReport.activityMap.markers}}"
+        include-points="{{adminReport.activityMap.includePoints}}"
+        show-location="{{false}}"
+      />
+      <view wx:else class="empty-state">当前年度还没有可展示的活动热力图。</view>
+      <block wx:if="{{adminReport.activityHeatmap.length}}">
+        <block wx:for="{{adminReport.activityHeatmap}}" wx:key="activityId">
+          <view class="list-card">
+            <view class="list-card-title">{{item.activityTitle}}</view>
+            <view class="meta">地点：{{item.displayLocation}}</view>
+            <view class="meta">热力值：{{item.displayIntensity}} / 缺口 {{item.displayGapCount}}</view>
+            <view class="meta">{{item.displayCategory}} / {{item.displayAreaTag}}</view>
+          </view>
+        </block>
+      </block>
+    </view>
+
+    <view class="card" wx:if="{{isSuperAdmin && platformOverview}}">
+      <view class="section-title">平台年报</view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <view class="stat-label">平台总活动数</view>
+          <view class="stat-value">{{platformOverview.totalActivities}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">活跃志愿者数</view>
+          <view class="stat-value">{{platformOverview.activeVolunteers}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">活跃管理员数</view>
+          <view class="stat-value">{{platformOverview.activeAdmins}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">平台总服务时长</view>
+          <view class="stat-value">{{platformOverview.totalServiceHours}}</view>
+        </view>
+      </view>
+      <view class="surface">
+        <view class="section-title">平台管理员榜</view>
+        <block wx:if="{{platformOverview.adminLeaderboard.length}}">
+          <block wx:for="{{platformOverview.adminLeaderboard}}" wx:key="userId">
+            <view class="analytics-row">
+              <view class="analytics-row-title">{{index + 1}}. {{item.userName}}</view>
+              <view class="analytics-row-value">{{item.totalActivities}} 场 / {{item.displayServiceHours}} 小时</view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="empty-state">当前年度还没有平台管理员榜数据。</view>
+      </view>
+    </view>
+  </block>
+</view>

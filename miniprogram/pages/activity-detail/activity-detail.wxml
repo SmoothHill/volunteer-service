@@ -1,0 +1,121 @@
+<view class="page" wx:if="{{activity}}">
+  <view class="hero-card">
+    <view class="title">{{activity.title}}</view>
+    <view class="meta">类别：{{activity.displayCategory}}</view>
+    <view class="meta">难度：{{activity.displayDifficulty}}</view>
+    <view class="meta">需求等级：{{activity.displayDemand}}</view>
+    <view class="meta">地点：{{activity.location}}</view>
+    <view class="meta">时间：{{activity.displayStartTime}} - {{activity.displayEndTime}}</view>
+    <view class="meta">围栏半径：{{activity.geofenceRadiusMeters}} 米</view>
+    <view class="meta" wx:if="{{loggedIn}}">我的状态：<text class="status-text">{{currentStatusText}}</text></view>
+    <view class="meta code-text">当前签到码：{{displayCheckInCode}}</view>
+    <view class="sub-title">{{activity.description || '暂无活动简介'}}</view>
+  </view>
+
+  <view class="card" wx:if="{{!loggedIn}}">
+    <view class="section-title">游客浏览</view>
+    <view class="accent-note">当前为游客模式，你可以先浏览活动信息。报名、签到、上传快照、记录足迹和补签都需要先登录。</view>
+    <button class="button-secondary" bindtap="goLogin">回首页登录 / 注册</button>
+  </view>
+
+  <view class="card">
+    <view class="section-title">基础操作</view>
+    <button class="button-primary" bindtap="enroll" disabled="{{!canEnroll}}">{{enrollButtonText}}</button>
+    <view class="accent-note">推荐优先使用扫码签到；如果扫码不方便，也可以手动填入当前签到码继续签到。</view>
+    <button class="button-primary" bindtap="scanCodeCheckIn">扫码签到</button>
+    <view wx:if="{{loggedIn}}">
+      <input
+        class="input"
+        placeholder="默认使用当前活动签到码，也可以手动输入"
+        value="{{checkInCode}}"
+        bindinput="onCodeInput"
+      />
+      <button class="button-secondary" bindtap="fillCurrentCode">填入当前签到码</button>
+    </view>
+    <button class="button-secondary" bindtap="checkInByCode">动态码签到</button>
+    <button class="button-secondary" bindtap="checkInByLocation">围栏签到</button>
+    <button class="button-primary" bindtap="checkOut">服务结束后签退</button>
+  </view>
+
+  <view class="card" wx:if="{{loggedIn}}">
+    <view class="section-title">定位调试信息</view>
+    <view class="meta">活动中心点：{{activityCenterText}}</view>
+    <view class="meta">当前位置：{{currentLocationText}}</view>
+    <view class="meta">距中心点：{{distanceToCenterText}}</view>
+    <view class="meta {{geofenceStatusClass}}">范围判断：{{geofenceStatusText}}</view>
+    <button class="button-secondary" bindtap="refreshCurrentLocation">刷新当前位置</button>
+  </view>
+
+  <view class="card">
+    <view class="section-title">服务记录</view>
+    <view class="meta">快照数量：{{snapshots.length}}</view>
+    <view class="meta">轨迹点数量：{{trackPoints.length}}</view>
+    <view class="meta" wx:if="{{loggedIn}}">足迹记录状态：{{trackSampling ? '服务中' : '未记录'}}</view>
+    <button class="button-secondary" bindtap="uploadSnapshot">上传服务快照</button>
+    <button class="button-secondary" bindtap="recordTrackPoint">记录足迹点</button>
+    <block wx:for="{{snapshots}}" wx:key="id">
+      <view class="meta clickable" data-url="{{item.imageUrl}}" bindtap="previewImage">查看快照：{{item.displayCreatedAt}}</view>
+    </block>
+  </view>
+
+  <view class="card" wx:if="{{loggedIn && hasTrackMap}}">
+    <view class="section-title">服务足迹地图</view>
+    <map
+      class="track-map"
+      latitude="{{mapLatitude}}"
+      longitude="{{mapLongitude}}"
+      scale="{{mapScale}}"
+      polyline="{{mapPolyline}}"
+      circles="{{mapCircles}}"
+      include-points="{{mapIncludePoints}}"
+      show-location="true"
+    ></map>
+    <view class="map-legend">
+      <view class="legend-item">
+        <view class="legend-dot legend-start"></view>
+        <text>起点</text>
+      </view>
+      <view class="legend-item">
+        <view class="legend-dot legend-end"></view>
+        <text>终点</text>
+      </view>
+      <view class="legend-item">
+        <view class="legend-dot legend-stay"></view>
+        <text>停留点</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">服务时间轴</view>
+    <view wx:if="{{loggedIn && timelineEvents.length}}" class="timeline-list">
+      <block wx:for="{{timelineEvents}}" wx:key="id">
+        <view class="timeline-item">
+          <view class="timeline-line"></view>
+          <view class="timeline-dot {{item.typeClass}}"></view>
+          <view class="timeline-content">
+            <view class="timeline-title">{{item.title}}</view>
+            <view class="timeline-time">{{item.time}}</view>
+            <view class="timeline-desc">{{item.description}}</view>
+          </view>
+        </view>
+      </block>
+    </view>
+    <view wx:elif="{{loggedIn}}" class="empty-note">完成签到、记录足迹或上传快照后，这里会显示你的服务时间轴。</view>
+    <view wx:else class="empty-note">登录后可查看个人服务过程的时间轴回放。</view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">补签申请</view>
+    <textarea
+      class="input textarea"
+      placeholder="填写补签原因，例如：现场网络较差、定位失败等"
+      value="{{supplementReason}}"
+      bindinput="onSupplementReasonInput"
+    ></textarea>
+    <button class="button-secondary" bindtap="uploadSupplementEvidence">上传补签凭证</button>
+    <view class="meta">凭证状态：{{displaySupplementEvidence}}</view>
+    <button class="button-secondary" bindtap="applyCheckInSupplement">申请签到补签</button>
+    <button class="button-primary" bindtap="applyCheckOutSupplement">申请签退补签</button>
+  </view>
+</view>

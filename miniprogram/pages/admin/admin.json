@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "\u7ba1\u7406\u7aef",
+  "usingComponents": {
+    "t-button": "/vendor/tdesign-miniprogram/button/button",
+    "t-qrcode": "/vendor/tdesign-miniprogram/qrcode/qrcode",
+    "t-tab-panel": "/vendor/tdesign-miniprogram/tab-panel/tab-panel",
+    "t-tabs": "/vendor/tdesign-miniprogram/tabs/tabs",
+    "t-tag": "/vendor/tdesign-miniprogram/tag/tag"
+  }
+}

@@ -1,0 +1,11 @@
+<view class="sensitive-field">
+  <view class="sensitive-label">{{label}}</view>
+  <view class="sensitive-content">
+    <view class="sensitive-value">
+      {{visible ? (value || emptyText) : (maskedValue || emptyText)}}
+    </view>
+    <view class="sensitive-toggle" bindtap="onToggle">
+      {{visible ? '隐藏' : '显示'}}
+    </view>
+  </view>
+</view>

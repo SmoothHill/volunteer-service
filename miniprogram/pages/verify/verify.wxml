@@ -1,0 +1,60 @@
+<view class="page">
+  <view class="hero-card" wx:if="{{profile}}">
+    <view class="title">实名认证</view>
+    <view class="sub-title">请补充真实姓名和身份证信息，完成身份认证。</view>
+    <view class="chip-row">
+      <view class="tag-chip {{profile.verified ? 'tag-success' : 'tag-warning'}}">{{profile.displayVerifiedStatus}}</view>
+      <view class="tag-chip tag-default">{{profile.displayRole}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">认证信息</view>
+    <view class="surface" wx:if="{{profile}}">
+      <sensitive-field
+        label="真实姓名"
+        value="{{form.realName}}"
+        masked-value="{{profile.displayRealName}}"
+        visible="{{visibility.realName}}"
+        empty-text="未认证"
+        data-field="realName"
+        bind:toggle="toggleSensitive"
+      />
+      <sensitive-field
+        label="身份证号"
+        value="{{form.idCardNo}}"
+        masked-value="{{profile.maskedIdCardNo}}"
+        visible="{{visibility.idCardNo}}"
+        empty-text="未填写"
+        data-field="idCardNo"
+        bind:toggle="toggleSensitive"
+      />
+    </view>
+    <input
+      class="input"
+      placeholder="请输入真实姓名"
+      value="{{form.realName}}"
+      data-field="realName"
+      bindinput="onInput"
+    />
+    <input
+      class="input"
+      placeholder="请输入身份证号"
+      value="{{form.idCardNo}}"
+      data-field="idCardNo"
+      bindinput="onInput"
+    />
+    <view class="accent-note">
+      认证完成后可查看志愿者号，无需手动填写。
+    </view>
+    <view class="accent-note" wx:if="{{profile && profile.maskedVolunteerCardNo}}">
+      当前志愿者号：{{profile.maskedVolunteerCardNo}}
+    </view>
+    <view class="accent-note">
+      完成认证后，志愿者、管理员和超级管理员都可以继续执行各自的关键操作。
+    </view>
+    <view class="button-row">
+      <button class="native-btn primary" bindtap="submit">提交认证</button>
+    </view>
+  </view>
+</view>

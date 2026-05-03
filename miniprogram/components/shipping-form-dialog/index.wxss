@@ -1,0 +1,104 @@
+.shipping-dialog {
+  width: 620rpx;
+  border-radius: 28rpx;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.shipping-dialog-title {
+  padding: 36rpx 32rpx 20rpx;
+  color: #0f172a;
+  font-size: 34rpx;
+  font-weight: 700;
+  text-align: center;
+}
+
+.shipping-dialog-body {
+  display: flex;
+  min-height: 320rpx;
+  border-top: 1rpx solid #edf2f7;
+  border-bottom: 1rpx solid #edf2f7;
+}
+
+.shipping-dialog-tabs {
+  width: 180rpx;
+  border-right: 1rpx solid #edf2f7;
+  background: #f8fbff;
+  display: flex;
+  flex-direction: column;
+  padding: 20rpx 0;
+  gap: 12rpx;
+}
+
+.shipping-dialog-tab {
+  position: relative;
+  margin: 0 14rpx;
+  padding: 22rpx 18rpx;
+  border-radius: 18rpx;
+  color: #475569;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.shipping-dialog-tab-active {
+  background: #ffffff;
+  color: #0052d9;
+  box-shadow: 0 10rpx 22rpx rgba(15, 23, 42, 0.06);
+}
+
+.shipping-dialog-panel {
+  flex: 1;
+  padding: 28rpx 24rpx;
+}
+
+.shipping-dialog-field {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.shipping-dialog-label {
+  color: #1e293b;
+  font-size: 28rpx;
+  font-weight: 700;
+}
+
+.shipping-dialog-input {
+  width: 100%;
+  min-height: 96rpx;
+  padding: 22rpx 20rpx;
+  border-radius: 20rpx;
+  background: #f8fafc;
+  border: 1rpx solid #dbe5f2;
+  box-sizing: border-box;
+  color: #0f172a;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+.shipping-dialog-input-address {
+  min-height: 168rpx;
+}
+
+.shipping-dialog-footer {
+  display: flex;
+  align-items: center;
+}
+
+.shipping-dialog-action {
+  flex: 1;
+  padding: 28rpx 0;
+  text-align: center;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.shipping-dialog-action-muted {
+  color: #475569;
+  border-right: 1rpx solid #edf2f7;
+}
+
+.shipping-dialog-action-primary {
+  color: #0052d9;
+}

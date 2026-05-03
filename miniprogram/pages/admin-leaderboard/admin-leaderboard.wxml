@@ -1,0 +1,61 @@
+<view class="page">
+  <view class="card empty-state" wx:if="{{loading}}">
+    正在加载排行榜...
+  </view>
+
+  <block wx:if="{{!loading}}">
+    <view class="hero-card">
+      <view class="title">服务排行</view>
+      <view class="sub-title">按周或按月查看志愿者服务表现。</view>
+      <view class="chip-row">
+        <view class="tag-chip {{period === 'week' ? 'tag-primary' : 'tag-default'}}" data-period="week" bindtap="switchPeriod">周榜</view>
+        <view class="tag-chip {{period === 'month' ? 'tag-primary' : 'tag-default'}}" data-period="month" bindtap="switchPeriod">月榜</view>
+      </view>
+      <view class="button-row">
+        <button class="native-btn outline" bindtap="goBack">返回管理端</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">我的管理范围</view>
+      <block wx:if="{{adminStars.length}}">
+        <block wx:for="{{adminStars}}" wx:key="userId">
+          <view class="list-card">
+            <view class="list-card-title">{{index + 1}}. {{item.userName}}</view>
+            <view class="chip-row">
+              <view class="tag-chip tag-primary">{{item.displayPeriod}}</view>
+              <view class="tag-chip tag-warning">星值 {{item.displayStarScore}}</view>
+              <view class="tag-chip tag-success">好评率 {{item.displayPositiveRatingRate}}</view>
+              <view class="tag-chip tag-default">轨迹 {{item.displayTrackCoverageScore}}</view>
+            </view>
+            <view class="meta">服务时长：{{item.displayTotalHours}} 小时 / 完成 {{item.completionCount}} 次</view>
+            <view class="meta">活跃社区：{{item.topArea || '未标注社区'}} / 代表活动：{{item.highlightTitle}}</view>
+            <view class="accent-note">{{item.displayShowcaseText}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">当前周期还没有排行数据。</view>
+    </view>
+
+    <view class="card" wx:if="{{isSuperAdmin}}">
+      <view class="section-title">平台总榜</view>
+      <block wx:if="{{platformStars.length}}">
+        <block wx:for="{{platformStars}}" wx:key="userId">
+          <view class="list-card">
+            <view class="list-card-title">{{index + 1}}. {{item.userName}}</view>
+            <view class="chip-row">
+              <view class="tag-chip tag-primary">{{item.displayPeriod}}</view>
+              <view class="tag-chip tag-warning">星值 {{item.displayStarScore}}</view>
+              <view class="tag-chip tag-success">好评率 {{item.displayPositiveRatingRate}}</view>
+              <view class="tag-chip tag-default">{{item.badgeName || '成长中'}}</view>
+            </view>
+            <view class="meta">服务时长：{{item.displayTotalHours}} 小时 / 完成 {{item.completionCount}} 次</view>
+            <view class="meta">活跃社区：{{item.topArea || '未标注社区'}} / 代表活动：{{item.highlightTitle}}</view>
+            <view class="accent-note">{{item.displayShowcaseText}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">当前周期还没有平台总榜数据。</view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,22 @@
+.idea/
+.m2/
+_restore_tmp/
+backend/.m2repo/
+miniprogram/project.private.config.json
+
+# Build outputs
+backend/target/
+admin-web/dist/
+admin-web/node_modules/
+miniprogram/miniprogram_npm/
+
+# Runtime/local files
+*.log
+*.out
+*.err
+backend/storage/
+
+# Archives/backups
+*.zip
+*.7z
+*.rar

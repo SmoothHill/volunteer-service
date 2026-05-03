@@ -1,0 +1,11 @@
+.snapshot-item {
+  margin-top: 16rpx;
+}
+
+.snapshot-image {
+  width: 100%;
+  height: 280rpx;
+  border-radius: 20rpx;
+  background: #eef3fb;
+  margin-bottom: 12rpx;
+}

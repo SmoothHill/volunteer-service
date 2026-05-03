@@ -1,0 +1,290 @@
+.hero-card .button-row {
+  margin-top: 24rpx;
+}
+
+.list-card .button-row {
+  margin-top: 20rpx;
+}
+
+.qrcode-box {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: #f8fbff;
+  border: 1rpx solid #dbeafe;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.qrcode-label {
+  width: 100%;
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.qrcode-tip {
+  font-size: 22rpx;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.minor-title {
+  margin-top: 12rpx;
+  margin-bottom: 8rpx;
+  font-size: 28rpx;
+}
+
+.compact-row {
+  margin-top: 12rpx;
+}
+
+.search-panel {
+  margin-top: 12rpx;
+}
+
+.picker-input {
+  display: flex;
+  align-items: center;
+  min-height: 88rpx;
+  line-height: 1.5;
+}
+
+.search-tip {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.search-result-list {
+  margin-top: 16rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+  border: 1rpx solid #dbeafe;
+  background: #ffffff;
+}
+
+.search-result-item {
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #e2e8f0;
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.search-result-address {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  line-height: 1.6;
+  color: #475569;
+}
+
+.search-result-meta {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+  color: #94a3b8;
+}
+
+.radius-block {
+  margin-top: 16rpx;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: #f8fbff;
+  border: 1rpx solid #dbeafe;
+}
+
+.radius-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  margin-bottom: 12rpx;
+}
+
+.radius-label {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.radius-value {
+  font-size: 24rpx;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.publish-map-panel {
+  margin-top: 20rpx;
+}
+
+.publish-point-card {
+  margin-bottom: 20rpx;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  background: #f8fbff;
+  border: 1rpx solid #dbeafe;
+}
+
+.publish-point-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.publish-point-title {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.publish-point-radius {
+  font-size: 24rpx;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.publish-point-name {
+  margin-top: 12rpx;
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.publish-point-meta {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #64748b;
+}
+
+.publish-point-hint {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.7;
+  color: #475569;
+}
+
+.publish-map {
+  width: 100%;
+  height: 420rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+}
+
+.track-map {
+  width: 100%;
+  height: 520rpx;
+  border-radius: 24rpx;
+  overflow: hidden;
+  margin-top: 12rpx;
+}
+
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24rpx;
+  margin-top: 20rpx;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  color: #475569;
+  font-size: 24rpx;
+}
+
+.legend-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+}
+
+.legend-start {
+  background: #16a34a;
+}
+
+.legend-ring {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  border: 3rpx solid #2563eb;
+  background: rgba(37, 99, 235, 0.16);
+}
+
+.legend-end {
+  background: #ef4444;
+}
+
+.legend-stay {
+  background: #f59e0b;
+}
+
+.tabs-shell {
+  margin-top: 20rpx;
+}
+
+.admin-tabs {
+  border-radius: 28rpx;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.td-tag-row {
+  gap: 16rpx;
+}
+
+.inline-tag {
+  margin-right: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.hero-actions {
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.card-actions {
+  gap: 20rpx;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  flex: 1;
+  min-width: 220rpx;
+}
+
+.action-button-wide {
+  width: 100%;
+}
+
+.activity-qrcode {
+  margin-top: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.evidence-item {
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #e2e8f0;
+}
+
+.evidence-item:last-child {
+  border-bottom: none;
+}
+
+.evidence-title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 8rpx;
+}

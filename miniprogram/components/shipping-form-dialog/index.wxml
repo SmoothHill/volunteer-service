@@ -1,0 +1,44 @@
+<t-popup
+  visible="{{visible}}"
+  placement="center"
+  show-overlay="true"
+  close-on-click-overlay="true"
+  bind:visible-change="onVisibleChange"
+>
+  <view class="shipping-dialog">
+    <view class="shipping-dialog-title">实体商品收货信息</view>
+    <view class="shipping-dialog-body">
+      <view class="shipping-dialog-tabs">
+        <block wx:for="{{tabList}}" wx:key="value">
+          <view
+            class="shipping-dialog-tab {{currentTab === item.value ? 'shipping-dialog-tab-active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onTabChange"
+          >
+            {{item.label}}
+          </view>
+        </block>
+      </view>
+      <view class="shipping-dialog-panel">
+        <block wx:for="{{tabList}}" wx:key="value">
+          <view wx:if="{{currentTab === item.value}}" class="shipping-dialog-field">
+            <view class="shipping-dialog-label">{{item.label}}</view>
+            <textarea
+              class="shipping-dialog-input {{item.value === 'recipientAddress' ? 'shipping-dialog-input-address' : ''}}"
+              data-field="{{item.value}}"
+              maxlength="{{item.value === 'recipientAddress' ? 200 : 40}}"
+              auto-height="{{item.value === 'recipientAddress'}}"
+              value="{{form[item.value] || ''}}"
+              placeholder="{{item.placeholder}}"
+              bindinput="onInput"
+            />
+          </view>
+        </block>
+      </view>
+    </view>
+    <view class="shipping-dialog-footer">
+      <view class="shipping-dialog-action shipping-dialog-action-muted" bindtap="onCancel">取消</view>
+      <view class="shipping-dialog-action shipping-dialog-action-primary" bindtap="onConfirm">确定</view>
+    </view>
+  </view>
+</t-popup>

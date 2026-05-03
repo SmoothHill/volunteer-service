@@ -1,0 +1,17 @@
+{
+  "name": "volunteer-miniprogram",
+  "version": "1.0.0",
+  "private": true,
+  "description": "志愿服务可信计量与激励小程序",
+  "scripts": {
+    "build:tdesign": "node scripts/build-tdesign-cjs.js"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.20",
+    "tdesign-miniprogram": "1.13.2",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}

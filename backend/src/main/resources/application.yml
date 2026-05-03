@@ -1,0 +1,120 @@
+server:
+  port: 8082
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    context-path: /
+
+spring:
+  application:
+    name: volunteer-backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/volunteer_service?characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: ${SPRING_REDIS_HOST:yuepin}
+    port: ${SPRING_REDIS_PORT:6379}
+    database: ${SPRING_REDIS_DATABASE:0}
+    password: ${SPRING_REDIS_PASSWORD:}
+  data:
+    redis:
+      repositories:
+        enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:none}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  jackson:
+    time-zone: Asia/Shanghai
+    serialization:
+      write-dates-as-timestamps: false
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:*}
+  jwt:
+    secret: ${APP_JWT_SECRET:local-jwt-secret-change-me}
+    expire-hours: ${APP_JWT_EXPIRE_HOURS:72}
+  super-admin:
+    web-username: ${APP_SUPER_ADMIN_USERNAME:superadmin}
+    web-password: ${APP_SUPER_ADMIN_PASSWORD:123456}
+  local-test-login:
+    enabled: ${APP_LOCAL_TEST_LOGIN_ENABLED:true}
+    volunteer-open-id: ${APP_LOCAL_TEST_LOGIN_OPEN_ID:local_test_volunteer}
+    volunteer-name: ${APP_LOCAL_TEST_LOGIN_NAME:LocalTestVolunteer}
+  demo-data:
+    enabled: ${APP_DEMO_DATA_ENABLED:true}
+  sensitive:
+    encryption-key: ${APP_SENSITIVE_ENCRYPTION_KEY:1234567890abcdef}
+    hash-salt: ${APP_SENSITIVE_HASH_SALT:volunteer-local-salt}
+  login-verification:
+    enabled: ${APP_LOGIN_VERIFICATION_ENABLED:false}
+    code-expire-minutes: ${APP_LOGIN_VERIFICATION_EXPIRE_MINUTES:5}
+    resend-cooldown-seconds: ${APP_LOGIN_VERIFICATION_RESEND_SECONDS:60}
+    sms-mode: ${APP_LOGIN_VERIFICATION_SMS_MODE:prod}
+  tencent-map:
+    web-service-key: ${APP_TENCENT_MAP_WEB_SERVICE_KEY:}
+    web-service-secret-key: ${APP_TENCENT_MAP_WEB_SERVICE_SECRET_KEY:}
+    api-base-url: https://apis.map.qq.com
+  notification:
+    activity-reminder-minutes: 60
+    reminder-scan-delay-ms: 600000
+    dispatch-mode: HYBRID
+    template-ids:
+      ENROLLMENT_APPROVED: BFvieOX5I-hnmuxwbwAIBZlxaQu2gLMob6s1k46eS7M
+      ENROLLMENT_REJECTED: BFvieOX5I-hnmuxwbwAIBZlxaQu2gLMob6s1k46eS7M
+      ACTIVITY_REMINDER: XOf6S0B6sW5qYGIJsOSWV9oYgGi2akf5W8USDykcEgA
+      SUPPLEMENT_SUBMITTED: 4DBb2cqVGZQj2VwK0BBRIfV1c4WKHwqrzAVq-j1uPaE
+      SUPPLEMENT_APPROVED: dmA4JlVDTCaETTAqwz3pfFRYFOeNv2qPiAakUN3QSiU
+      SUPPLEMENT_REJECTED: 2OCAhg0IyAIs7gUbRunl4SARA6ZgWLvRB6WLiRnRE3w
+      TASK_COMPLETED: NoZQu5BlSSXB4qllfeO1wYiCIl76OqWiYfsPtE3goEI
+      SERVICE_RATING_RECEIVED: 0YOpNrUjKdL5n_eezhZw9X6izc7e_Ya-_jsOz19yDM8
+      REWARD_FINALIZED: 4FVJWo66-PwJu_PqVneDySEEdBc53reSKQ7dnp1Utxs
+      REDEMPTION_CREATED: k95LkKmKEY-wGIk2xKchqbyYQ1XwmpTqxhkO91UXh1Q
+      REDEMPTION_DELIVERED: k95LkKmKEY-wGIk2xKchqbyYQ1XwmpTqxhkO91UXh1Q
+      ENROLLMENT_PENDING_REVIEW: TdZc1aPXbA-QRIARa8Oqmfg396EwuW5ICbkZNGHakx0
+      SUPPLEMENT_PENDING_REVIEW: I-FjIerQLbyOO4L8050pbE_IWk9nqGWTimsyInBV2AQ
+      SERVICE_CONFIRM_PENDING: RzYHTf5luVonN3VtJqNY_HiaRjKIEpueoYH39wxwFH0
+    page-paths:
+      ENROLLMENT_APPROVED: /pages/messages/messages
+      ENROLLMENT_REJECTED: /pages/messages/messages
+      ACTIVITY_REMINDER: /pages/activity-detail/activity-detail
+      SUPPLEMENT_SUBMITTED: /pages/messages/messages
+      SUPPLEMENT_APPROVED: /pages/messages/messages
+      SUPPLEMENT_REJECTED: /pages/messages/messages
+      TASK_COMPLETED: /pages/messages/messages
+      SERVICE_RATING_RECEIVED: /pages/messages/messages
+      REWARD_FINALIZED: /pages/messages/messages
+      REDEMPTION_CREATED: /pages/messages/messages
+      REDEMPTION_DELIVERED: /pages/messages/messages
+      ENROLLMENT_PENDING_REVIEW: /pages/admin/admin
+      SUPPLEMENT_PENDING_REVIEW: /pages/admin/admin
+      SERVICE_CONFIRM_PENDING: /pages/admin/admin
+    template-data-keys: {}
+  storage:
+    type: ${APP_STORAGE_TYPE:local}
+    root-dir: ${APP_STORAGE_ROOT_DIR:./storage}
+    public-prefix: /files
+    cos-bucket: ${APP_STORAGE_COS_BUCKET:}
+    cos-region: ${APP_STORAGE_COS_REGION:}
+    cos-secret-id: ${APP_STORAGE_COS_SECRET_ID:}
+    cos-secret-key: ${APP_STORAGE_COS_SECRET_KEY:}
+    cos-base-path: ${APP_STORAGE_COS_BASE_PATH:volunteer}
+  wechat:
+    app-id: wx5ae32e43468adc18
+    app-secret: ${APP_WECHAT_APP_SECRET:}
+    code2session-url: https://api.weixin.qq.com/sns/jscode2session
+    access-token-url: https://api.weixin.qq.com/cgi-bin/token
+    subscribe-message-send-url: https://api.weixin.qq.com/cgi-bin/message/subscribe/send?access_token={accessToken}

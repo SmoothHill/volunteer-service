@@ -1,0 +1,103 @@
+﻿<view class="page">
+  <view class="card empty-state" wx:if="{{loading}}">
+    正在加载年度服务报告...
+  </view>
+
+  <block wx:if="{{report}}">
+    <view class="hero-card">
+      <view class="title">{{report.year}} 年度服务报告</view>
+      <view class="sub-title">{{report.displaySummaryText}}</view>
+
+      <view class="surface">
+        <view class="section-title">年份筛选</view>
+        <picker mode="selector" range="{{yearOptions}}" value="{{selectedYearIndex}}" bindchange="onYearChange">
+          <view class="picker-field">{{yearOptions[selectedYearIndex]}} 年</view>
+        </picker>
+      </view>
+
+      <view class="stats-grid">
+        <view class="stat-item">
+          <view class="stat-label">年度总服务时长</view>
+          <view class="stat-value">{{report.totalServiceHours}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">年度参与活动数</view>
+          <view class="stat-value">{{report.totalActivities}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">年度累计积分</view>
+          <view class="stat-value">{{report.totalPoints}}</view>
+        </view>
+        <view class="stat-item">
+          <view class="stat-label">年度获得证书数</view>
+          <view class="stat-value">{{report.totalCertificates}}</view>
+        </view>
+      </view>
+
+      <view class="surface">
+        <view class="section-title">年度亮点</view>
+        <view class="meta">年度最高评分活动：{{report.displayBestActivityTitle}}</view>
+        <view class="meta">最高评分：{{report.displayBestActivityRating}}</view>
+        <view class="meta">主要服务类别：{{report.displayTopCategory}}</view>
+        <view class="meta">服务区域覆盖：{{report.displayCoveredAreas}}</view>
+      </view>
+
+      <view class="button-row">
+        <button class="native-btn outline" bindtap="goBack">返回上一页</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">足迹地图</view>
+      <map
+        wx:if="{{report.hasMap}}"
+        class="annual-map"
+        latitude="{{report.mapLatitude}}"
+        longitude="{{report.mapLongitude}}"
+        scale="{{report.mapScale}}"
+        markers="{{report.markers}}"
+        polyline="{{report.polyline}}"
+        include-points="{{report.includePoints}}"
+        show-location="{{false}}"
+      />
+      <view wx:else class="empty-state">今年还没有可展示的足迹地图。</view>
+      <view class="meta" wx:if="{{report.hasMap}}">足迹点已按时间顺序连接，点击标记可查看活动名称。</view>
+    </view>
+
+    <view class="card" wx:if="{{report.footprintList.length}}">
+      <view class="section-title">代表足迹</view>
+      <block wx:for="{{report.footprintList}}" wx:key="index">
+        <view class="list-card">
+          <view class="list-card-title">{{item.activityTitle || '服务足迹'}}</view>
+          <view class="chip-row">
+            <view class="tag-chip tag-primary">{{item.displayPointType}}</view>
+          </view>
+          <view class="meta">地点：{{item.location || '未标注地点'}}</view>
+          <view class="meta">坐标：{{item.latitude}}, {{item.longitude}}</view>
+          <view class="meta">记录时间：{{item.displayRecordedAt}}</view>
+        </view>
+      </block>
+    </view>
+
+    <view class="card">
+      <view class="section-title">代表性活动记录</view>
+      <block wx:if="{{report.representativeRecords.length}}">
+        <block wx:for="{{report.representativeRecords}}" wx:key="recordKey">
+          <view class="list-card" data-activity-id="{{item.activityId}}" bindtap="openRepresentativeActivity">
+            <view class="list-card-title">{{item.displayActivityTitle}}</view>
+            <view class="chip-row">
+              <view class="tag-chip tag-primary">{{item.displayStatus}}</view>
+              <view class="tag-chip tag-default">{{item.displayActivityCategory}}</view>
+              <view class="tag-chip tag-success">{{item.earnedPoints || 0}} 积分</view>
+            </view>
+            <view class="meta">签到时间：{{item.displayCheckInTime}}</view>
+            <view class="meta">签退时间：{{item.displayCheckOutTime}}</view>
+            <view class="meta">服务时长：{{item.serviceHours || 0}} 小时</view>
+            <view class="meta" wx:if="{{item.displayServiceRating}}">服务评分：{{item.displayServiceRating}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">今年暂时还没有代表性活动记录。</view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,7 @@
+.list-card .t-button {
+  margin-top: 20rpx;
+}
+
+.surface sensitive-field + sensitive-field {
+  margin-top: 24rpx;
+}

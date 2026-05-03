@@ -1,0 +1,359 @@
+<view class="page {{needAuthChoice ? 'auth-page' : ''}}">
+  <shipping-form-dialog
+    visible="{{shippingDialogVisible}}"
+    form="{{shippingForm}}"
+    bind:change="onShippingFormChange"
+    bind:cancel="onShippingDialogCancel"
+    bind:confirm="onShippingDialogConfirm"
+  />
+
+  <view wx:if="{{needAuthChoice}}">
+    <view class="hero-card">
+      <view class="hero-top">
+        <view class="hero-badge">微信身份</view>
+        <view class="hero-visual">
+          <view class="hero-orb hero-orb-primary"></view>
+          <view class="hero-orb hero-orb-secondary"></view>
+          <view class="hero-visual-card">
+            <view class="hero-visual-title">玉屏志愿平台</view>
+            <view class="hero-visual-meta">活动、签到、记录一体化</view>
+          </view>
+        </view>
+        <view class="title">玉屏志愿平台</view>
+        <view class="sub-title">进入系统前，请先确认是否使用当前微信号完成登录或注册。正式运行时首次绑定还需要补一次手机号验证码。</view>
+        <view class="auth-feature-row">
+          <view class="auth-feature auth-feature-primary">微信授权</view>
+          <view class="auth-feature auth-feature-success">游客可浏览</view>
+          <view class="auth-feature auth-feature-warning">管理员可申请</view>
+        </view>
+      </view>
+
+      <view class="button-row">
+        <button class="native-btn primary" bindtap="authorizeLogin">同意并登录 / 注册</button>
+        <button class="native-btn outline" bindtap="enterGuestMode">先看看，不登录</button>
+        <button wx:if="{{localTestLoginEnabled}}" class="native-btn outline" bindtap="loginLocalVolunteer">本地志愿者测试登录</button>
+      </view>
+
+      <view wx:if="{{phoneVerificationVisible}}" class="verify-panel">
+        <view class="verify-title">首次绑定手机号</view>
+        <view class="verify-meta">完成短信验证码验证后，才会发放正式登录态。</view>
+        <input
+          class="input"
+          type="number"
+          maxlength="11"
+          placeholder="请输入手机号"
+          value="{{phoneVerificationForm.phoneNo}}"
+          data-field="phoneNo"
+          bindinput="onPhoneVerificationInput"
+        />
+        <view class="verify-code-row">
+          <input
+            class="input verify-code-input"
+            type="number"
+            maxlength="6"
+            placeholder="请输入 6 位验证码"
+            value="{{phoneVerificationForm.code}}"
+            data-field="code"
+            bindinput="onPhoneVerificationInput"
+          />
+          <button
+            class="native-btn outline verify-code-btn"
+            loading="{{phoneVerificationLoading}}"
+            disabled="{{phoneVerificationLoading || phoneVerificationCountdown > 0}}"
+            bindtap="sendPhoneVerificationCode"
+          >
+            {{phoneVerificationCountdown > 0 ? phoneVerificationCountdown + 's 后重发' : '发送验证码'}}
+          </button>
+        </view>
+        <view wx:if="{{phoneVerificationDebugCode}}" class="accent-note">
+          当前为开发模拟发送，验证码：{{phoneVerificationDebugCode}}
+        </view>
+        <view class="button-row">
+          <button class="native-btn outline" bindtap="cancelPhoneVerification">取消</button>
+          <button class="native-btn primary" loading="{{phoneVerificationLoading}}" bindtap="submitPhoneVerification">完成验证并登录</button>
+        </view>
+      </view>
+
+      <view class="auth-note-row">
+        <view class="auth-note-card">
+          <view class="auth-note-title">可信签到</view>
+          <view class="auth-note-meta">定位与动态二维码双校验</view>
+        </view>
+        <view class="auth-note-card">
+          <view class="auth-note-title">积分规则</view>
+          <view class="auth-note-meta">按时长、难度和评价综合计分</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <block wx:else>
+    <view class="card">
+      <view class="title">{{profile ? ('你好，' + profile.name) : '游客模式'}}</view>
+      <view class="sub-title" wx:if="{{profile}}">当前身份：{{profile.displayRole}}</view>
+      <view class="sub-title" wx:if="{{guestMode && !profile}}">当前为游客模式，你可以先浏览公开活动信息。</view>
+      <view class="chip-row" wx:if="{{profile}}">
+        <view class="tag-chip tag-primary">{{profile.displayRole}}</view>
+        <view class="tag-chip tag-default" wx:if="{{profile.badgeName}}">{{profile.badgeName}}</view>
+        <view class="tag-chip tag-success">{{profile.totalPoints}} 积分</view>
+      </view>
+      <view class="button-row" wx:if="{{profile && !needRoleSelection}}">
+        <button class="native-btn primary" bindtap="openDashboard">我的中心</button>
+        <button class="native-btn outline" bindtap="openMessages">消息提醒</button>
+        <button class="native-btn outline" bindtap="logout">退出登录</button>
+      </view>
+      <view class="button-row" wx:if="{{guestMode && !profile}}">
+        <button class="native-btn primary" bindtap="authorizeLogin">立即登录 / 注册</button>
+        <button class="native-btn outline" bindtap="resetAuthChoice">重新选择</button>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{needRoleSelection}}">
+      <view class="section-title">完成身份选择</view>
+      <view class="sub-title">你已经完成登录，但还没有正式身份。请先注册为志愿者，或提交活动管理员申请。</view>
+      <view class="button-row">
+        <button class="native-btn primary" bindtap="registerVolunteer">注册为志愿者</button>
+      </view>
+      <view class="surface">
+        <view class="meta">如果你希望负责活动发布、签到码刷新、补签审核和服务评价，请先提交管理员申请。</view>
+        <textarea
+          class="textarea"
+          placeholder="请填写申请原因，例如：负责哪个组织，将管理哪类志愿服务活动"
+          value="{{adminApplyReason}}"
+          bindinput="onAdminReasonInput"
+        />
+        <button
+          class="native-btn outline"
+          disabled="{{adminApplication.status === 'PENDING'}}"
+          bindtap="submitAdminApplication"
+        >
+          {{adminApplication && adminApplication.status === 'PENDING' ? '已有待审核申请' : '申请成为活动管理员'}}
+        </button>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{adminApplication.exists}}">
+      <view class="section-title">最近一次管理员申请</view>
+      <view class="chip-row">
+        <view class="tag-chip tag-primary">{{adminApplication.displayStatus}}</view>
+        <view class="tag-chip tag-default">{{adminApplication.displayRole}}</view>
+      </view>
+      <view class="meta">申请时间：{{adminApplication.displayCreatedAt}}</view>
+      <view class="meta">申请原因：{{adminApplication.reason}}</view>
+      <view class="meta" wx:if="{{adminApplication.reviewComment}}">审核意见：{{adminApplication.reviewComment}}</view>
+      <view class="meta" wx:if="{{adminApplication.reviewedAt}}">审核时间：{{adminApplication.displayReviewedAt}}</view>
+      <view class="accent-note" wx:if="{{adminApplication.status === 'APPROVED'}}">你的申请已通过，重新进入后会自动跳转到管理端。</view>
+      <view class="accent-note" wx:if="{{adminApplication.status === 'REJECTED'}}">你的申请已被驳回，可以根据审核意见调整后再次提交。</view>
+    </view>
+
+    <view class="tabs-block">
+      <scroll-view class="native-tabs-scroll" scroll-x="true" show-scrollbar="false" enhanced="true">
+        <view class="native-tabs native-tabs-home">
+          <view class="native-tab {{currentTab === 'square' ? 'native-tab-active' : ''}}" data-tab="square" bindtap="switchTab">活动广场</view>
+          <view class="native-tab {{currentTab === 'recommend' ? 'native-tab-active' : ''}}" data-tab="recommend" bindtap="switchTab">推荐活动</view>
+          <view class="native-tab {{currentTab === 'leaderboard' ? 'native-tab-active' : ''}}" data-tab="leaderboard" bindtap="switchTab">排行榜</view>
+          <view class="native-tab {{currentTab === 'heatmap' ? 'native-tab-active' : ''}}" data-tab="heatmap" bindtap="switchTab">社区热力</view>
+          <view class="native-tab {{currentTab === 'store' ? 'native-tab-active' : ''}}" data-tab="store" bindtap="switchTab">积分商城</view>
+        </view>
+      </scroll-view>
+
+      <view class="tabs-panel" wx:if="{{currentTab === 'square'}}">
+        <block wx:if="{{activities.length}}">
+          <block wx:for="{{activities}}" wx:key="id">
+            <view class="list-card" data-id="{{item.id}}" bindtap="openDetail">
+              <view class="list-card-title">{{item.title}}</view>
+              <view class="chip-row">
+                <view class="tag-chip tag-primary">{{item.displayStatus}}</view>
+                <view class="tag-chip tag-default">{{item.displayCategory}}</view>
+                <view class="tag-chip tag-warning">{{item.displayDifficulty}}</view>
+                <view class="tag-chip tag-success">{{item.displayDemand}}</view>
+              </view>
+              <view class="meta">地点：{{item.location}}</view>
+              <view class="meta">时间：{{item.displayStartTime}} - {{item.displayEndTime}}</view>
+              <view class="meta">已报名：{{item.enrolledCount}} / {{item.capacity}}</view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="card empty-state">当前没有可展示的活动。</view>
+      </view>
+
+      <view class="tabs-panel" wx:if="{{currentTab === 'recommend'}}">
+        <block wx:if="{{profile && !needRoleSelection && recommendations.length}}">
+          <block wx:for="{{recommendations}}" wx:key="activityId">
+            <view class="list-card" data-id="{{item.activityId}}" bindtap="openDetail">
+              <view class="list-card-title">{{item.title}}</view>
+              <view class="chip-row">
+                <view class="tag-chip tag-primary">{{item.category}}</view>
+                <view class="tag-chip tag-warning">难度 {{item.difficultyLevel}}</view>
+                <view class="tag-chip tag-success">推荐分 {{item.recommendationScore}}</view>
+              </view>
+              <view class="meta">推荐理由：{{item.recommendationReason}}</view>
+              <view class="meta">已报名人数：{{item.enrolledCount}}</view>
+            </view>
+          </block>
+        </block>
+        <view wx:elif="{{!profile || needRoleSelection}}" class="card empty-state">完成登录并确认身份后，这里会显示个性化推荐。</view>
+        <view wx:else class="card empty-state">当前还没有可用的推荐结果。</view>
+      </view>
+
+      <view class="tabs-panel" wx:if="{{currentTab === 'leaderboard'}}">
+        <block wx:if="{{profile && !needRoleSelection && (leaderboard.length || starLeaderboard.length)}}">
+          <view class="card insight-card">
+            <view class="section-title">排行榜</view>
+            <view class="sub-title">可按不同方式查看当前排行。</view>
+            <view class="chip-row insight-switch-row">
+              <view class="tag-chip {{leaderboardViewMode === 'star' ? 'tag-primary' : 'tag-default'}}" data-mode="star" bindtap="switchLeaderboardView">综合排行</view>
+              <view class="tag-chip {{leaderboardViewMode === 'classic' ? 'tag-primary' : 'tag-default'}}" data-mode="classic" bindtap="switchLeaderboardView">积分排行</view>
+            </view>
+          </view>
+
+          <view class="card insight-card" wx:if="{{leaderboardViewMode === 'star'}}">
+            <view class="section-title">综合排行</view>
+            <view class="chip-row">
+              <view class="tag-chip {{leaderboardPeriod === 'week' ? 'tag-primary' : 'tag-default'}}" data-period="week" bindtap="switchLeaderboardPeriod">周榜</view>
+              <view class="tag-chip {{leaderboardPeriod === 'month' ? 'tag-primary' : 'tag-default'}}" data-period="month" bindtap="switchLeaderboardPeriod">月榜</view>
+            </view>
+            <block wx:if="{{starLeaderboard.length}}">
+              <block wx:for="{{starLeaderboard}}" wx:key="userId">
+                <view class="insight-item">
+                  <view class="insight-head">
+                    <view class="insight-title">{{index + 1}}. {{item.userName}}</view>
+                    <view class="tag-chip tag-warning">星值 {{item.displayStarScore}}</view>
+                  </view>
+                  <view class="chip-row">
+                    <view class="tag-chip tag-primary">{{item.displayPeriod}}</view>
+                    <view class="tag-chip tag-success">好评率 {{item.displayPositiveRatingRate}}</view>
+                    <view class="tag-chip tag-default">轨迹 {{item.displayTrackCoverageScore}}</view>
+                  </view>
+                  <view class="meta">服务时长：{{item.displayTotalHours}} 小时 / 完成 {{item.completionCount}} 次</view>
+                  <view class="meta">活跃社区：{{item.topArea || '未标注社区'}} / 代表活动：{{item.highlightTitle}}</view>
+                  <view class="accent-note">{{item.displayShowcaseText}}</view>
+                </view>
+              </block>
+            </block>
+            <view wx:else class="empty-state">当前周期还没有排行数据。</view>
+          </view>
+
+          <block wx:if="{{leaderboardViewMode === 'classic'}}">
+            <view class="card insight-card">
+              <view class="section-title">积分排行</view>
+              <view class="sub-title">按积分和服务时长查看排名。</view>
+            </view>
+            <block wx:if="{{leaderboard.length}}">
+              <block wx:for="{{leaderboard}}" wx:key="userId">
+                <view class="list-card">
+                  <view class="list-card-title">{{index + 1}}. {{item.userName}}</view>
+                  <view class="chip-row">
+                    <view class="tag-chip tag-primary">{{item.badgeName}}</view>
+                    <view class="tag-chip tag-success">{{item.totalPoints}} 积分</view>
+                  </view>
+                  <view class="meta">累计时长：{{item.totalHours}} 小时</view>
+                </view>
+              </block>
+            </block>
+            <view wx:else class="card empty-state">当前还没有积分排行数据。</view>
+          </block>
+        </block>
+        <view wx:elif="{{!profile || needRoleSelection}}" class="card empty-state">完成登录并确认身份后，可以查看服务排行榜。</view>
+        <view wx:else class="card empty-state">当前还没有排行榜数据。</view>
+      </view>
+
+      <view class="tabs-panel" wx:if="{{currentTab === 'heatmap'}}">
+        <block wx:if="{{profile && !needRoleSelection && (heatmap.length || communityInsights.length)}}">
+          <view class="card insight-card">
+            <view class="section-title">社区热力</view>
+            <view class="sub-title">可按需求和热度两种方式查看社区情况。</view>
+            <view class="chip-row insight-switch-row">
+              <view class="tag-chip {{heatmapViewMode === 'insight' ? 'tag-primary' : 'tag-default'}}" data-mode="insight" bindtap="switchHeatmapView">社区需求</view>
+              <view class="tag-chip {{heatmapViewMode === 'classic' ? 'tag-primary' : 'tag-default'}}" data-mode="classic" bindtap="switchHeatmapView">活动热度</view>
+            </view>
+          </view>
+
+          <view class="card insight-card" wx:if="{{heatmapViewMode === 'insight'}}">
+            <view class="section-title">社区需求</view>
+            <view class="chip-row">
+              <view class="tag-chip {{heatmapPeriod === 'week' ? 'tag-primary' : 'tag-default'}}" data-period="week" bindtap="switchHeatmapPeriod">本周</view>
+              <view class="tag-chip {{heatmapPeriod === 'month' ? 'tag-primary' : 'tag-default'}}" data-period="month" bindtap="switchHeatmapPeriod">本月</view>
+            </view>
+            <block wx:if="{{communityInsights.length}}">
+              <block wx:for="{{communityInsights}}" wx:key="communityName">
+                <view class="insight-item">
+                  <view class="insight-head">
+                    <view class="insight-title">{{item.communityName}}</view>
+                    <view class="tag-chip {{item.displayAreaTag === '需求洼地' ? 'tag-warning' : item.displayAreaTag === '服务活力区' ? 'tag-success' : 'tag-default'}}">
+                      {{item.displayAreaTag}}
+                    </view>
+                  </view>
+                  <view class="meta">街道：{{item.streetName}} / 地点：{{item.displayLocation}}</view>
+                  <view class="chip-row">
+                    <view class="tag-chip tag-primary">需求 {{item.displayDemandIndex}}</view>
+                    <view class="tag-chip tag-success">活力 {{item.displayVitalityIndex}}</view>
+                    <view class="tag-chip tag-default">缺口 {{item.displayGapCount}}</view>
+                    <view class="tag-chip tag-default">轨迹 {{item.displayTrackCoverageScore}}</view>
+                  </view>
+                  <view class="accent-note">{{item.displayGuidanceText}}</view>
+                </view>
+              </block>
+            </block>
+            <view wx:else class="empty-state">当前周期还没有社区数据。</view>
+          </view>
+
+          <block wx:if="{{heatmapViewMode === 'classic'}}">
+            <view class="card insight-card">
+              <view class="section-title">活动热度</view>
+              <view class="sub-title">按活动热度、需求等级和报名缺口查看。</view>
+            </view>
+            <block wx:if="{{heatmap.length}}">
+              <block wx:for="{{heatmap}}" wx:key="activityId">
+                <view class="list-card">
+                  <view class="list-card-title">{{item.activityTitle}}</view>
+                  <view class="chip-row">
+                    <view class="tag-chip tag-primary">{{item.areaTag}}</view>
+                    <view class="tag-chip tag-default">{{item.category}}</view>
+                    <view class="tag-chip tag-warning">需求 {{item.demandLevel}}</view>
+                  </view>
+                  <view class="meta">热力值：{{item.intensity}}</view>
+                  <view class="meta">报名缺口：{{item.gapCount}}</view>
+                  <view class="meta">地点：{{item.location}}</view>
+                </view>
+              </block>
+            </block>
+            <view wx:else class="card empty-state">当前还没有活动热度数据。</view>
+          </block>
+        </block>
+        <view wx:elif="{{!profile || needRoleSelection}}" class="card empty-state">完成登录并确认身份后，可以查看社区热力图。</view>
+        <view wx:else class="card empty-state">当前还没有热力分析数据。</view>
+      </view>
+
+      <view class="tabs-panel" wx:if="{{currentTab === 'store'}}">
+        <block wx:if="{{profile && !needRoleSelection && storeItems.length}}">
+          <block wx:for="{{storeItems}}" wx:key="id">
+            <view class="list-card">
+              <view class="list-card-title">{{item.name}}</view>
+              <view class="chip-row">
+                <view class="tag-chip tag-primary">{{item.category}}</view>
+                <view class="tag-chip tag-warning">{{item.pointsCost}} 积分</view>
+                <view class="tag-chip tag-default">库存 {{item.stock}}</view>
+                <view class="tag-chip {{item.deliveryType === 'PHYSICAL' ? 'tag-success' : 'tag-default'}}">
+                  {{item.deliveryType === 'PHYSICAL' ? '实体商品' : '虚拟商品'}}
+                </view>
+              </view>
+              <view class="meta">说明：{{item.description}}</view>
+              <view class="meta" wx:if="{{item.deliveryType === 'PHYSICAL'}}">兑换时需要填写收货人、手机号和收货地址。</view>
+              <button
+                class="native-btn primary"
+                data-id="{{item.id}}"
+                data-delivery-type="{{item.deliveryType}}"
+                bindtap="redeemStoreItem"
+              >
+                立即兑换
+              </button>
+            </view>
+          </block>
+        </block>
+        <view wx:elif="{{!profile || needRoleSelection}}" class="card empty-state">完成登录并确认身份后，可以使用积分商城。</view>
+        <view wx:else class="card empty-state">当前商城暂无可兑换商品。</view>
+      </view>
+    </view>
+  </block>
+</view>

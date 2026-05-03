@@ -1,0 +1,3 @@
+.list-card .meta + .meta {
+  margin-top: 8rpx;
+}

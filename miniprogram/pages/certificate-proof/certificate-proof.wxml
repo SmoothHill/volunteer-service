@@ -1,0 +1,76 @@
+<view class="page">
+  <view class="hero-card" wx:if="{{proof}}">
+    <view class="title">{{proof.certificateTitle || '志愿服务证明'}}</view>
+    <view class="sub-title">{{proof.systemName}} 为本次志愿服务出具的正式证明预览。</view>
+    <view class="chip-row">
+      <view class="tag-chip tag-primary">{{scope === 'admin' ? '管理端导出' : '本人导出'}}</view>
+      <view class="tag-chip tag-success">证书编号 {{proof.certificateNo}}</view>
+      <view class="tag-chip tag-default">出具时间 {{proof.displayIssuedAt}}</view>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{proof}}">
+    <view class="section-title">志愿者信息</view>
+    <view class="meta">姓名：{{proof.volunteerName}}</view>
+    <view class="meta">志愿者号：{{proof.displayVolunteerCardNo}}</view>
+    <view class="meta">身份证号：{{proof.displayMaskedIdCardNo}}</view>
+  </view>
+
+  <view class="card" wx:if="{{proof}}">
+    <view class="section-title">活动信息</view>
+    <view class="meta">活动名称：{{proof.activityTitle}}</view>
+    <view class="meta">活动类别：{{proof.activityCategory}}</view>
+    <view class="meta">服务地点：{{proof.activityLocation}}</view>
+    <view class="meta">活动时间：{{proof.displayActivityStartTime}} - {{proof.displayActivityEndTime}}</view>
+    <view class="meta">签到时间：{{proof.displayCheckInTime}}</view>
+    <view class="meta">签退时间：{{proof.displayCheckOutTime}}</view>
+    <view class="meta">服务时长：{{proof.serviceHours}} 小时</view>
+  </view>
+
+  <view class="card" wx:if="{{proof}}">
+    <view class="section-title">评价与结算</view>
+    <view class="meta">服务评分：{{proof.displayServiceRating}}</view>
+    <view class="meta">获得积分：{{proof.earnedPoints}}</view>
+    <view class="meta">评价意见：{{proof.displayServiceComment}}</view>
+    <view class="meta">组织者确认时间：{{proof.displayOrganizerConfirmedAt}}</view>
+    <view class="meta">组织者确认意见：{{proof.displayOrganizerConfirmComment}}</view>
+    <view class="meta">结算完成时间：{{proof.displayRewardFinalizedAt}}</view>
+  </view>
+
+  <view class="card" wx:if="{{proof}}">
+    <view class="section-title">区块链存证</view>
+    <view class="meta">存证状态：{{proof.displayBlockchainProofStatus}}</view>
+    <view class="meta">上链时间：{{proof.displayBlockchainAnchoredAt}}</view>
+    <view class="meta">流水号：{{proof.displayBlockchainTransactionNo}}</view>
+    <view class="meta">服务商：{{proof.displayBlockchainProviderName}}</view>
+    <view class="meta">原始哈希：{{proof.displayEvidenceHash}}</view>
+  </view>
+
+  <view class="card" wx:if="{{proof && proof.snapshots.length}}">
+    <view class="section-title">服务快照</view>
+    <block wx:for="{{proof.snapshots}}" wx:key="index">
+      <view class="surface snapshot-item" data-index="{{index}}" bindtap="previewSnapshot">
+        <image class="snapshot-image" src="{{item.fullImageUrl}}" mode="aspectFill"></image>
+        <view class="meta">拍摄时间：{{item.displayCreatedAt}}</view>
+        <view class="meta">快照说明：{{item.displayNote}}</view>
+      </view>
+    </block>
+  </view>
+
+  <view class="card" wx:if="{{proof}}">
+    <view class="section-title">出具说明</view>
+    <view class="meta">本证明用于展示志愿者在平台内完成的服务记录、组织者确认、评价结算与存证摘要。</view>
+    <view class="meta">当前页面支持直接导出 PDF 文件，小程序端下载后会自动打开文档。</view>
+    <view class="meta">平台（盖章位）：{{proof.systemName}}</view>
+  </view>
+
+  <view class="button-row" wx:if="{{proof}}">
+    <button wx:if="{{proof.displayCertificateUrl}}" class="native-btn outline" bindtap="previewCertificate">查看电子证书</button>
+    <button class="native-btn outline" loading="{{exportingPdf}}" bindtap="exportPdf">导出PDF</button>
+    <button class="native-btn primary" bindtap="goBack">返回上一页</button>
+  </view>
+
+  <view class="card empty-state" wx:if="{{loading}}">
+    正在加载证明内容...
+  </view>
+</view>

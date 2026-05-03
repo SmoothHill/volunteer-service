@@ -1,0 +1,483 @@
+<view class="page">
+  <view class="hero-card" wx:if="{{profile}}">
+    <view class="title">管理端</view>
+    <view class="sub-title">{{profile.name}}，欢迎进入活动管理端。当前角色：{{profile.displayRole}}</view>
+    <view class="chip-row td-tag-row">
+      <t-tag theme="primary" variant="light" size="large" t-class="inline-tag">{{profile.displayRole}}</t-tag>
+      <t-tag theme="{{profile.verified ? 'success' : 'warning'}}" variant="light" size="large" t-class="inline-tag">{{profile.displayVerifiedStatus}}</t-tag>
+      <t-tag theme="success" variant="light" size="large" t-class="inline-tag">{{systemSettings.systemName}}</t-tag>
+    </view>
+    <view class="button-row hero-actions">
+      <t-button variant="outline" size="large" t-class="action-button" bindtap="openAdminAnnualReport">管理年报</t-button>
+      <t-button wx:if="{{canParticipate}}" variant="outline" size="large" t-class="action-button" bindtap="openActivitySquare">活动广场</t-button>
+      <t-button variant="outline" size="large" t-class="action-button" bindtap="openDashboard">我的中心</t-button>
+      <t-button variant="outline" size="large" t-class="action-button" bindtap="openMessages">消息中心</t-button>
+      <t-button variant="outline" size="large" t-class="action-button" bindtap="logout">退出登录</t-button>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{isSuperAdmin}}">
+    <view class="section-title">超级管理员提示</view>
+    <view class="meta">你在小程序中拥有与普通活动管理员一致的活动管理能力。</view>
+    <view class="meta">如需进行全局配置、系统设置和平台级管理，请前往 PC 端登录 admin-web 后台。</view>
+    <view class="button-row hero-actions">
+      <t-button theme="warning" variant="outline" size="large" t-class="action-button" bindtap="copyAdminWebUrl">复制 PC 端后台地址</t-button>
+    </view>
+    <view class="meta">当前后台地址：{{systemSettings.adminWebUrl || '尚未配置'}}</view>
+  </view>
+
+  <view class="tabs-shell">
+    <t-tabs value="{{currentTab}}" bindchange="onTabChange" t-class="admin-tabs">
+      <t-tab-panel value="publish" label="发布活动">
+        <view class="card">
+          <view class="section-title">创建新活动</view>
+          <input class="input" data-field="title" value="{{form.title}}" placeholder="活动标题" bindinput="onInput" />
+          <input class="input" data-field="description" value="{{form.description}}" placeholder="活动简介" bindinput="onInput" />
+          <picker mode="selector" range="{{activityCategories}}" value="{{activityCategoryIndex}}" bindchange="onActivityCategoryChange">
+            <view class="input picker-input">{{form.category}}</view>
+          </picker>
+          <input class="input" data-field="difficultyLevel" value="{{form.difficultyLevel}}" placeholder="难度等级 1-5" bindinput="onInput" />
+          <input class="input" data-field="difficultyCoefficient" value="{{form.difficultyCoefficient}}" placeholder="难度系数，例如 1.15" bindinput="onInput" />
+          <input class="input" data-field="demandLevel" value="{{form.demandLevel}}" placeholder="需求等级 1-5" bindinput="onInput" />
+
+          <view class="section-title minor-title">服务站点</view>
+          <picker mode="selector" range="{{serviceSites}}" range-key="displayName" value="{{serviceSitePickerIndex}}" bindchange="onServiceSiteChange">
+            <view class="input picker-input">{{serviceSites[serviceSitePickerIndex].displayName}}</view>
+          </picker>
+          <view class="meta">{{selectedServiceSiteDetail}}</view>
+
+          <view class="section-title minor-title">签到地点与范围</view>
+          <input class="input" data-field="location" value="{{form.location}}" placeholder="活动地点" bindinput="onInput" />
+          <view class="search-panel">
+            <input class="input" value="{{publishSearchKeyword}}" placeholder="搜索地点名称，确定签到中心点" bindinput="onPublishSearchInput" />
+            <view class="button-row compact-row">
+              <t-button theme="primary" size="large" t-class="action-button-wide" bindtap="triggerPublishSearch">搜索地点</t-button>
+            </view>
+            <view class="search-tip">可直接搜索社区、学校、养老院、服务站等地点名称，也可以先选择服务站点再微调。</view>
+            <view class="meta" wx:if="{{publishSearchLoading}}">正在搜索地点...</view>
+            <view class="search-result-list" wx:if="{{publishSearchResults.length}}">
+              <block wx:for="{{publishSearchResults}}" wx:key="id">
+                <view class="search-result-item" data-index="{{index}}" bindtap="choosePublishSuggestion">
+                  <view class="search-result-title">{{item.title}}</view>
+                  <view class="search-result-address">{{item.address}}</view>
+                  <view class="search-result-meta">{{item.latitude}}, {{item.longitude}}</view>
+                </view>
+              </block>
+            </view>
+            <view class="meta" wx:if="{{publishSearchAttempted && publishSearchKeyword && !publishSearchLoading && !publishSearchResults.length}}">
+              暂无匹配地点，可尝试输入更完整的地址名称。
+            </view>
+          </view>
+
+          <view class="meta">签到地点：{{form.location || '暂未选择地点'}}</view>
+          <view class="meta">中心坐标：{{form.latitude}}, {{form.longitude}}</view>
+
+          <view class="radius-block">
+            <view class="radius-head">
+              <view class="radius-label">签到范围</view>
+              <view class="radius-value">{{form.geofenceRadiusMeters}} 米</view>
+            </view>
+            <slider min="50" max="1000" step="10" value="{{form.geofenceRadiusMeters}}" activeColor="#2563eb" backgroundColor="#dbeafe" bindchange="onRadiusChange" />
+          </view>
+
+          <view class="publish-map-panel" wx:if="{{hasPublishMapPreview}}">
+            <view class="publish-point-card">
+              <view class="publish-point-head">
+                <view class="publish-point-title">当前签到中心点</view>
+                <view class="publish-point-radius">{{form.geofenceRadiusMeters}} 米</view>
+              </view>
+              <view class="publish-point-name">{{form.location || '暂未选择地点'}}</view>
+              <view class="publish-point-meta">中心坐标：{{form.latitude}}, {{form.longitude}}</view>
+              <view class="publish-point-hint">{{publishRadiusHint}}</view>
+            </view>
+            <map class="publish-map" latitude="{{publishMapLatitude}}" longitude="{{publishMapLongitude}}" scale="{{publishMapScale}}" circles="{{publishMapCircles}}" include-points="{{publishMapIncludePoints}}" show-location="true"></map>
+            <view class="map-legend">
+              <view class="legend-item">
+                <view class="legend-dot legend-start"></view>
+                <text>签到中心点</text>
+              </view>
+              <view class="legend-item">
+                <view class="legend-ring"></view>
+                <text>签到范围</text>
+              </view>
+            </view>
+          </view>
+
+          <input class="input" data-field="startTime" value="{{form.startTime}}" placeholder="开始时间 2026-04-20 09:00:00" bindinput="onInput" />
+          <input class="input" data-field="endTime" value="{{form.endTime}}" placeholder="结束时间 2026-04-20 12:00:00" bindinput="onInput" />
+          <input class="input" data-field="capacity" value="{{form.capacity}}" placeholder="人数上限" bindinput="onInput" />
+          <t-button theme="primary" size="large" t-class="action-button-wide" bindtap="createActivity">创建活动</t-button>
+        </view>
+      </t-tab-panel>
+
+      <t-tab-panel value="activities" label="活动管理">
+        <block wx:if="{{activities.length}}">
+          <block wx:for="{{activities}}" wx:key="id">
+            <view class="list-card">
+              <view class="list-card-title">{{item.title}}</view>
+              <view class="chip-row td-tag-row">
+                <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.displayCategory}}</t-tag>
+                <t-tag theme="warning" variant="light" t-class="inline-tag">{{item.displayDifficulty}}</t-tag>
+                <t-tag theme="success" variant="light" t-class="inline-tag">{{item.displayDemand}}</t-tag>
+              </view>
+              <view class="meta">当前签到码：{{item.checkInCode}}</view>
+              <view class="meta">地点：{{item.location}}</view>
+              <view class="meta">时间：{{item.displayStartTime}} - {{item.displayEndTime}}</view>
+              <view class="surface qrcode-box" wx:if="{{item.qrValue}}">
+                <view class="qrcode-label">动态二维码</view>
+                <t-qrcode value="{{item.qrValue}}" size="{{176}}" level="M" status="active" bg-color="#ffffff" color="#1d4ed8" t-class="activity-qrcode"></t-qrcode>
+                <view class="publish-point-name">{{item.checkInCode}}</view>
+                <view class="qrcode-tip">二维码和签到码会同步刷新，志愿者可直接扫码签到，也可以手动输入签到码。</view>
+              </view>
+              <view class="button-row card-actions">
+                <t-button variant="outline" size="large" t-class="action-button" data-id="{{item.id}}" bindtap="refreshCode">刷新签到码</t-button>
+                <t-button theme="primary" size="large" t-class="action-button" data-id="{{item.id}}" bindtap="loadRecords">查看服务记录</t-button>
+                <t-button theme="primary" variant="outline" size="large" t-class="action-button" data-id="{{item.id}}" bindtap="openEvidenceCenter">查看证据中心</t-button>
+              </view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="card empty-state">当前还没有活动，请先创建。</view>
+      </t-tab-panel>
+
+      <t-tab-panel value="store" label="积分商城">
+        <view class="card">
+          <view class="section-title">{{storeForm.id ? '编辑商品' : '新增商品'}}</view>
+          <input class="input" data-field="name" value="{{storeForm.name}}" placeholder="商品名称" bindinput="onStoreFormInput" />
+          <picker mode="selector" range="{{storeCategories}}" value="{{storeCategoryIndex}}" bindchange="onStoreCategoryChange">
+            <view class="input picker-input">{{storeForm.category}}</view>
+          </picker>
+          <input class="input" data-field="description" value="{{storeForm.description}}" placeholder="商品描述" bindinput="onStoreFormInput" />
+          <input class="input" data-field="pointsCost" value="{{storeForm.pointsCost}}" placeholder="所需积分" bindinput="onStoreFormInput" />
+          <input class="input" data-field="stock" value="{{storeForm.stock}}" placeholder="库存" bindinput="onStoreFormInput" />
+          <picker mode="selector" range="{{['VIRTUAL','PHYSICAL']}}" value="{{storeForm.deliveryType === 'PHYSICAL' ? 1 : 0}}" bindchange="onStoreTypeChange">
+            <view class="input picker-input">{{storeForm.deliveryType === 'PHYSICAL' ? '实体商品' : '虚拟商品'}}</view>
+          </picker>
+          <view class="button-row">
+            <t-button variant="outline" size="large" t-class="action-button" bindtap="toggleStoreActive">
+              {{storeForm.active ? '当前已上架' : '当前已下架'}}
+            </t-button>
+            <t-button variant="outline" size="large" t-class="action-button" bindtap="resetStoreForm">重置表单</t-button>
+          </view>
+          <t-button theme="primary" size="large" t-class="action-button-wide" bindtap="saveStoreItem">
+            {{storeForm.id ? '保存商品' : '新增商品'}}
+          </t-button>
+        </view>
+
+        <view class="card">
+          <view class="section-title">商品列表</view>
+          <block wx:if="{{storeItems.length}}">
+            <block wx:for="{{storeItems}}" wx:key="id">
+              <view class="list-card">
+                <view class="list-card-title">{{item.name}}</view>
+                <view class="chip-row td-tag-row">
+                  <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.category}}</t-tag>
+                  <t-tag theme="warning" variant="light" t-class="inline-tag">{{item.pointsCost}} 积分</t-tag>
+                  <t-tag variant="light" t-class="inline-tag">库存 {{item.stock}}</t-tag>
+                  <t-tag theme="{{item.deliveryType === 'PHYSICAL' ? 'success' : 'default'}}" variant="light" t-class="inline-tag">{{item.displayDeliveryType}}</t-tag>
+                </view>
+                <view class="meta">说明：{{item.description}}</view>
+                <view class="meta">状态：{{item.active ? '上架中' : '已下架'}}</view>
+                <view class="button-row card-actions">
+                  <t-button variant="outline" size="large" t-class="action-button" data-index="{{index}}" bindtap="editStoreItem">编辑商品</t-button>
+                </view>
+              </view>
+            </block>
+          </block>
+          <view wx:else class="empty-state">当前还没有商城商品。</view>
+        </view>
+
+        <view class="card">
+          <view class="section-title">兑换发放</view>
+          <block wx:if="{{redemptionRecords.length}}">
+            <block wx:for="{{redemptionRecords}}" wx:key="id">
+              <view class="list-card">
+                <view class="list-card-title">{{item.itemName}}</view>
+                <view class="chip-row td-tag-row">
+                  <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.displayStatus}}</t-tag>
+                  <t-tag variant="light" t-class="inline-tag">{{item.displayDeliveryType}}</t-tag>
+                  <t-tag theme="warning" variant="light" t-class="inline-tag">数量 {{item.quantity}}</t-tag>
+                </view>
+                <view class="meta">兑换人：{{item.userName}}</view>
+                <view class="meta">提交时间：{{item.displayCreatedAt}}</view>
+                <view class="meta" wx:if="{{item.recipientName}}">收货人：{{item.recipientName}}</view>
+                <view class="meta" wx:if="{{item.displayRecipientPhone}}">手机号：{{item.displayRecipientPhone}}</view>
+                <view class="meta" wx:if="{{item.recipientAddress}}">收货地址：{{item.recipientAddress}}</view>
+                <view class="meta" wx:if="{{item.deliveryRemark}}">备注：{{item.deliveryRemark}}</view>
+                <view class="button-row card-actions" wx:if="{{item.status === 'CREATED'}}">
+                  <t-button theme="primary" size="large" t-class="action-button" data-id="{{item.id}}" bindtap="deliverRedemption">标记发放</t-button>
+                  <t-button theme="danger" size="large" t-class="action-button" data-id="{{item.id}}" bindtap="cancelRedemption">取消兑换</t-button>
+                </view>
+              </view>
+            </block>
+          </block>
+          <view wx:else class="empty-state">当前没有兑换记录。</view>
+        </view>
+      </t-tab-panel>
+
+      <t-tab-panel value="enrollments" label="报名审核">
+        <block wx:if="{{pendingEnrollments.length}}">
+          <block wx:for="{{pendingEnrollments}}" wx:key="recordId">
+            <view class="list-card">
+              <view class="list-card-title">{{item.userName}}</view>
+              <view class="chip-row td-tag-row">
+                <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.displayStatus}}</t-tag>
+                <t-tag variant="light" t-class="inline-tag">{{item.activityTitle}}</t-tag>
+                <t-tag theme="success" variant="light" t-class="inline-tag">{{item.displayActivityCategory}}</t-tag>
+              </view>
+              <view class="meta">申请时间：{{item.displayCreatedAt}}</view>
+              <view class="meta">活动编号：{{item.activityId}}</view>
+              <view class="button-row card-actions">
+                <t-button theme="primary" size="large" t-class="action-button" data-id="{{item.recordId}}" bindtap="approveEnrollment">通过报名</t-button>
+                <t-button theme="danger" size="large" t-class="action-button" data-id="{{item.recordId}}" bindtap="rejectEnrollment">驳回报名</t-button>
+              </view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="card empty-state">当前没有待审核的报名申请。</view>
+      </t-tab-panel>
+
+      <t-tab-panel value="leaderboard" label="排行榜">
+        <view class="card">
+          <view class="section-title">服务排行</view>
+          <view class="chip-row">
+            <view class="tag-chip {{insightPeriod === 'week' ? 'tag-primary' : 'tag-default'}}" data-period="week" bindtap="switchInsightPeriod">周榜</view>
+            <view class="tag-chip {{insightPeriod === 'month' ? 'tag-primary' : 'tag-default'}}" data-period="month" bindtap="switchInsightPeriod">月榜</view>
+          </view>
+          <block wx:if="{{adminStarLeaderboard.length}}">
+            <block wx:for="{{adminStarLeaderboard}}" wx:key="userId">
+              <view class="list-card">
+                <view class="list-card-title">{{index + 1}}. {{item.userName}}</view>
+                <view class="chip-row td-tag-row">
+                  <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.displayPeriod}}</t-tag>
+                  <t-tag theme="warning" variant="light" t-class="inline-tag">星值 {{item.displayStarScore}}</t-tag>
+                  <t-tag theme="success" variant="light" t-class="inline-tag">好评率 {{item.displayPositiveRatingRate}}</t-tag>
+                  <t-tag variant="light" t-class="inline-tag">轨迹 {{item.displayTrackCoverageScore}}</t-tag>
+                </view>
+                <view class="meta">服务时长：{{item.displayTotalHours}} 小时 / 完成 {{item.completionCount}} 次</view>
+                <view class="meta">活跃社区：{{item.topArea || '未标注社区'}} / 代表活动：{{item.highlightTitle}}</view>
+                <view class="meta">{{item.displayShowcaseText}}</view>
+              </view>
+            </block>
+          </block>
+          <view wx:else class="empty-state">当前周期还没有排行数据。</view>
+        </view>
+
+        <view class="card" wx:if="{{isSuperAdmin && platformAnnualOverview && platformAnnualOverview.adminLeaderboard.length}}">
+          <view class="section-title">平台管理员榜</view>
+          <block wx:for="{{platformAnnualOverview.adminLeaderboard}}" wx:key="userId">
+            <view class="list-card">
+              <view class="list-card-title">{{index + 1}}. {{item.userName}}</view>
+              <view class="chip-row td-tag-row">
+                <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.badgeName}}</t-tag>
+                <t-tag theme="success" variant="light" t-class="inline-tag">{{item.activityCount}} 场活动</t-tag>
+                <t-tag variant="light" t-class="inline-tag">{{item.displayServiceHours}} 小时</t-tag>
+              </view>
+            </view>
+          </block>
+        </view>
+      </t-tab-panel>
+
+      <t-tab-panel value="community" label="社区热力">
+        <view class="card">
+          <view class="section-title">社区需求</view>
+          <view class="chip-row">
+            <view class="tag-chip {{insightPeriod === 'week' ? 'tag-primary' : 'tag-default'}}" data-period="week" bindtap="switchInsightPeriod">本周</view>
+            <view class="tag-chip {{insightPeriod === 'month' ? 'tag-primary' : 'tag-default'}}" data-period="month" bindtap="switchInsightPeriod">本月</view>
+          </view>
+          <block wx:if="{{adminCommunityInsights.length}}">
+            <block wx:for="{{adminCommunityInsights}}" wx:key="communityName">
+              <view class="list-card">
+                <view class="list-card-title">{{item.communityName}}</view>
+                <view class="chip-row td-tag-row">
+                  <t-tag theme="{{item.displayAreaTag === '需求洼地' ? 'warning' : item.displayAreaTag === '服务活力区' ? 'success' : 'default'}}" variant="light" t-class="inline-tag">{{item.displayAreaTag}}</t-tag>
+                  <t-tag theme="primary" variant="light" t-class="inline-tag">需求 {{item.displayDemandIndex}}</t-tag>
+                  <t-tag theme="success" variant="light" t-class="inline-tag">活力 {{item.displayVitalityIndex}}</t-tag>
+                  <t-tag variant="light" t-class="inline-tag">缺口 {{item.displayGapCount}}</t-tag>
+                </view>
+                <view class="meta">街道：{{item.streetName}} / 地点：{{item.displayLocation}}</view>
+                <view class="meta">轨迹覆盖：{{item.displayTrackCoverageScore}} / 活动数：{{item.activityCount}} / 报名数：{{item.totalEnrollments}}</view>
+                <view class="meta">{{item.displayGuidanceText}}</view>
+              </view>
+            </block>
+          </block>
+          <view wx:else class="empty-state">当前周期还没有社区数据。</view>
+        </view>
+
+        <view class="card" wx:if="{{adminCommunityHeatmap.length}}">
+          <view class="section-title">活动热度</view>
+          <block wx:for="{{adminCommunityHeatmap}}" wx:key="activityId">
+            <view class="list-card">
+              <view class="list-card-title">{{item.activityTitle}}</view>
+              <view class="chip-row td-tag-row">
+                <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.displayAreaTag}}</t-tag>
+                <t-tag variant="light" t-class="inline-tag">{{item.displayCategory}}</t-tag>
+                <t-tag theme="warning" variant="light" t-class="inline-tag">需求 {{item.displayDemandLevel}}</t-tag>
+              </view>
+              <view class="meta">热力值：{{item.displayIntensity}}</view>
+              <view class="meta">报名缺口：{{item.displayGapCount}}</view>
+              <view class="meta">地点：{{item.displayLocation}}</view>
+            </view>
+          </block>
+        </view>
+      </t-tab-panel>
+
+      <t-tab-panel value="records" label="服务记录">
+        <view class="card" wx:if="{{selectedActivityId}}">
+          <view class="section-title">当前查看</view>
+          <view class="meta">{{selectedActivityTitle || ('活动 ' + selectedActivityId)}}</view>
+          <view class="meta">轨迹点数量：{{trackPointCount}}</view>
+        </view>
+
+        <view class="card" wx:if="{{hasTrackMap}}">
+          <view class="section-title">服务轨迹地图</view>
+          <map class="track-map" latitude="{{adminMapLatitude}}" longitude="{{adminMapLongitude}}" scale="{{adminMapScale}}" polyline="{{adminMapPolyline}}" circles="{{adminMapCircles}}" include-points="{{adminMapIncludePoints}}" show-location="true"></map>
+          <view class="map-legend">
+            <view class="legend-item">
+              <view class="legend-dot legend-start"></view>
+              <text>起点</text>
+            </view>
+            <view class="legend-item">
+              <view class="legend-dot legend-end"></view>
+              <text>终点</text>
+            </view>
+            <view class="legend-item">
+              <view class="legend-dot legend-stay"></view>
+              <text>停留点</text>
+            </view>
+          </view>
+        </view>
+
+        <block wx:if="{{records.length}}">
+          <block wx:for="{{records}}" wx:key="recordId">
+            <view class="list-card">
+              <view class="list-card-title">{{item.userName}}</view>
+              <view class="chip-row td-tag-row">
+                <t-tag theme="primary" variant="light" t-class="inline-tag">{{item.displayStatus}}</t-tag>
+                <t-tag variant="light" t-class="inline-tag">{{item.displayActivityCategory}}</t-tag>
+                <t-tag theme="success" variant="light" t-class="inline-tag">{{item.displayRewardStatus}}</t-tag>
+                <t-tag wx:if="{{item.organizerConfirmed}}" theme="success" variant="light" t-class="inline-tag">已确认</t-tag>
+                <t-tag wx:else theme="warning" variant="light" t-class="inline-tag">待确认</t-tag>
+              </view>
+              <view class="meta">签到时间：{{item.displayCheckInTime}}</view>
+              <view class="meta">签退时间：{{item.displayCheckOutTime}}</view>
+              <view class="meta">服务时长：{{item.serviceHours || 0}} 小时</view>
+              <view class="meta">确认状态：{{item.displayConfirmStatus}}</view>
+              <view class="meta">确认时间：{{item.displayConfirmedAt}}</view>
+              <view class="meta">服务评分：{{item.displayServiceRating}}</view>
+              <view class="meta" wx:if="{{item.organizerConfirmComment}}">确认意见：{{item.organizerConfirmComment}}</view>
+              <view class="meta" wx:if="{{item.pointBreakdown}}">积分明细：{{item.pointBreakdown}}</view>
+              <view class="meta" wx:if="{{item.serviceComment}}">评价意见：{{item.serviceComment}}</view>
+              <t-button wx:if="{{item.status === 'COMPLETED' && item.rewardPending && !item.organizerConfirmed}}" theme="primary" size="large" t-class="action-button-wide" data-activity-id="{{item.activityId}}" data-record-id="{{item.recordId}}" bindtap="confirmRecord">确认服务完成</t-button>
+              <t-button wx:if="{{item.rewardPending && item.organizerConfirmed}}" theme="primary" size="large" t-class="action-button-wide" data-activity-id="{{item.activityId}}" data-record-id="{{item.recordId}}" bindtap="evaluateRecord">完成服务评价</t-button>
+              <t-button wx:if="{{item.canExportProof}}" variant="outline" size="large" t-class="action-button-wide" data-record-id="{{item.recordKey}}" bindtap="openCertificateProof">导出志愿服务证明</t-button>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="card empty-state">先从活动管理里选择一个活动查看记录。</view>
+      </t-tab-panel>
+
+      <t-tab-panel value="evidence" label="证据中心">
+        <view class="card" wx:if="{{activities.length}}">
+          <view class="section-title">活动证据中心</view>
+          <picker mode="selector" range="{{activities}}" range-key="title" value="{{evidencePickerIndex}}" bindchange="onEvidenceActivityChange">
+            <view class="input picker-input">{{evidenceActivityTitle || '请选择活动查看证据'}}</view>
+          </picker>
+          <view class="meta" wx:if="{{evidenceActivityId}}">当前活动：{{evidenceActivityTitle}}</view>
+        </view>
+
+        <view class="card" wx:if="{{evidenceRecords.length}}">
+          <view class="section-title">服务记录</view>
+          <block wx:for="{{evidenceRecords}}" wx:key="recordId">
+            <view class="evidence-item">
+              <view class="evidence-title">{{item.userName}}</view>
+              <view class="meta">状态：{{item.displayStatus}}</view>
+              <view class="meta">签到时间：{{item.displayCheckInTime}}</view>
+              <view class="meta">签退时间：{{item.displayCheckOutTime}}</view>
+              <view class="meta">服务时长：{{item.serviceHours || 0}} 小时</view>
+            </view>
+          </block>
+        </view>
+        <view wx:else class="card empty-state">暂无服务记录</view>
+
+        <view class="card" wx:if="{{evidenceSnapshots.length}}">
+          <view class="section-title">服务快照</view>
+          <block wx:for="{{evidenceSnapshots}}" wx:key="id">
+            <view class="evidence-item">
+              <view class="evidence-title">快照 {{index + 1}}</view>
+              <view class="meta">上传时间：{{item.displayCreatedAt}}</view>
+              <view class="meta">说明：{{item.displayNote}}</view>
+            </view>
+          </block>
+        </view>
+        <view wx:else class="card empty-state">暂无服务快照</view>
+
+        <view class="card" wx:if="{{evidenceTrackPoints.length}}">
+          <view class="section-title">轨迹点</view>
+          <block wx:for="{{evidenceTrackPoints}}" wx:key="id">
+            <view class="evidence-item">
+              <view class="evidence-title">{{item.displayPointType}}</view>
+              <view class="meta">记录时间：{{item.displayRecordedAt}}</view>
+              <view class="meta">坐标：{{item.latitude}}, {{item.longitude}}</view>
+            </view>
+          </block>
+        </view>
+        <view wx:else class="card empty-state">暂无轨迹点</view>
+
+        <view class="card" wx:if="{{hasEvidenceTrackMap}}">
+          <view class="section-title">地图轨迹</view>
+          <view class="meta">轨迹点数量：{{evidenceTrackPointCount}}</view>
+          <map
+            class="track-map"
+            latitude="{{evidenceMapLatitude}}"
+            longitude="{{evidenceMapLongitude}}"
+            scale="{{evidenceMapScale}}"
+            polyline="{{evidenceMapPolyline}}"
+            circles="{{evidenceMapCircles}}"
+            include-points="{{evidenceMapIncludePoints}}"
+            show-location="true"
+          ></map>
+        </view>
+        <view wx:else class="card empty-state">暂无地图轨迹</view>
+
+        <view class="card" wx:if="{{evidenceBlockchainProofs.length}}">
+          <view class="section-title">区块链存证</view>
+          <block wx:for="{{evidenceBlockchainProofs}}" wx:key="id">
+            <view class="evidence-item">
+              <view class="evidence-title">{{item.displayEventType}}</view>
+              <view class="meta">存证状态：{{item.displayProofStatus}}</view>
+              <view class="meta">事件时间：{{item.displayEventTime}}</view>
+              <view class="meta">上链时间：{{item.displayAnchoredAt}}</view>
+              <view class="meta">流水号：{{item.displayTransactionNo}}</view>
+              <view class="meta">原始哈希：{{item.shortEvidenceHash}}</view>
+              <view class="meta">摘要：{{item.displayPayloadSummary}}</view>
+              <view class="meta" wx:if="{{item.displayFailureReason}}">失败原因：{{item.displayFailureReason}}</view>
+            </view>
+          </block>
+        </view>
+        <view wx:else class="card empty-state">暂无区块链存证记录</view>
+      </t-tab-panel>
+
+      <t-tab-panel value="supplements" label="补签审核">
+        <block wx:if="{{pendingSupplements.length}}">
+          <block wx:for="{{pendingSupplements}}" wx:key="id">
+            <view class="list-card">
+              <view class="list-card-title">{{item.userName}}</view>
+              <view class="chip-row td-tag-row">
+                <t-tag theme="warning" variant="light" t-class="inline-tag">{{item.displayType}}</t-tag>
+                <t-tag variant="light" t-class="inline-tag">{{item.activityTitle}}</t-tag>
+              </view>
+              <view class="meta">申请时间：{{item.displayRequestedTime}}</view>
+              <view class="meta">申请原因：{{item.reason || '未填写'}}</view>
+              <view class="button-row card-actions">
+                <t-button theme="primary" size="large" t-class="action-button" data-id="{{item.id}}" bindtap="approveSupplement">通过补签</t-button>
+                <t-button theme="danger" size="large" t-class="action-button" data-id="{{item.id}}" bindtap="rejectSupplement">驳回补签</t-button>
+              </view>
+            </view>
+          </block>
+        </block>
+        <view wx:else class="card empty-state">当前没有待审核的补签申请。</view>
+      </t-tab-panel>
+    </t-tabs>
+  </view>
+</view>

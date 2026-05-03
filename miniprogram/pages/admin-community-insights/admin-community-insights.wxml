@@ -1,0 +1,65 @@
+<view class="page">
+  <view class="card empty-state" wx:if="{{loading}}">
+    正在加载社区数据...
+  </view>
+
+  <block wx:if="{{!loading}}">
+    <view class="hero-card">
+      <view class="title">社区需求</view>
+      <view class="sub-title">基于报名和服务记录，查看社区需求与服务活跃度。</view>
+      <view class="chip-row">
+        <view class="tag-chip {{period === 'week' ? 'tag-primary' : 'tag-default'}}" data-period="week" bindtap="switchPeriod">本周</view>
+        <view class="tag-chip {{period === 'month' ? 'tag-primary' : 'tag-default'}}" data-period="month" bindtap="switchPeriod">本月</view>
+      </view>
+      <view class="button-row">
+        <button class="native-btn outline" bindtap="goBack">返回管理端</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="section-title">我的管理范围</view>
+      <block wx:if="{{adminInsights.length}}">
+        <block wx:for="{{adminInsights}}" wx:key="communityName">
+          <view class="list-card">
+            <view class="list-card-title">{{item.communityName}}</view>
+            <view class="chip-row">
+              <view class="tag-chip {{item.displayAreaTag === '需求洼地' ? 'tag-warning' : item.displayAreaTag === '服务活力区' ? 'tag-success' : 'tag-default'}}">
+                {{item.displayAreaTag}}
+              </view>
+              <view class="tag-chip tag-primary">需求 {{item.displayDemandIndex}}</view>
+              <view class="tag-chip tag-success">活力 {{item.displayVitalityIndex}}</view>
+              <view class="tag-chip tag-default">缺口 {{item.displayGapCount}}</view>
+            </view>
+            <view class="meta">街道：{{item.streetName}} / 地点：{{item.displayLocation}}</view>
+            <view class="meta">轨迹覆盖：{{item.displayTrackCoverageScore}} / 活动数：{{item.activityCount}} / 报名数：{{item.totalEnrollments}}</view>
+            <view class="accent-note">{{item.displayGuidanceText}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">当前周期还没有社区数据。</view>
+    </view>
+
+    <view class="card" wx:if="{{isSuperAdmin}}">
+      <view class="section-title">平台总览</view>
+      <block wx:if="{{platformInsights.length}}">
+        <block wx:for="{{platformInsights}}" wx:key="communityName">
+          <view class="list-card">
+            <view class="list-card-title">{{item.communityName}}</view>
+            <view class="chip-row">
+              <view class="tag-chip {{item.displayAreaTag === '需求洼地' ? 'tag-warning' : item.displayAreaTag === '服务活力区' ? 'tag-success' : 'tag-default'}}">
+                {{item.displayAreaTag}}
+              </view>
+              <view class="tag-chip tag-primary">需求 {{item.displayDemandIndex}}</view>
+              <view class="tag-chip tag-success">活力 {{item.displayVitalityIndex}}</view>
+              <view class="tag-chip tag-default">缺口 {{item.displayGapCount}}</view>
+            </view>
+            <view class="meta">街道：{{item.streetName}} / 地点：{{item.displayLocation}}</view>
+            <view class="meta">轨迹覆盖：{{item.displayTrackCoverageScore}} / 活动数：{{item.activityCount}} / 报名数：{{item.totalEnrollments}}</view>
+            <view class="accent-note">{{item.displayGuidanceText}}</view>
+          </view>
+        </block>
+      </block>
+      <view wx:else class="empty-state">当前周期还没有平台社区数据。</view>
+    </view>
+  </block>
+</view>

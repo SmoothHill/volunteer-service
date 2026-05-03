@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "我的中心",
+  "usingComponents": {
+    "sensitive-field": "/components/sensitive-field/index",
+    "shipping-form-dialog": "/components/shipping-form-dialog/index"
+  }
+}

@@ -1,0 +1,35 @@
+<view class="page" wx:if="{{profile}}">
+  <view class="hero-card">
+    <view class="title">消息中心</view>
+    <view class="sub-title">这里统一查看与你当前账号相关的业务通知、审核结果和活动提醒。</view>
+    <view class="chip-row">
+      <view class="tag-chip tag-primary">{{profile.displayRole}}</view>
+      <view class="tag-chip {{profile.verified ? 'tag-success' : 'tag-warning'}}">{{profile.displayVerifiedStatus}}</view>
+      <view class="tag-chip tag-default">{{profile.name}}</view>
+    </view>
+
+    <view class="button-row">
+      <button class="native-btn outline" bindtap="showSubscriptionTip">订阅消息说明</button>
+      <button class="native-btn outline" bindtap="goBack">返回上一页</button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="section-title">消息记录</view>
+    <block wx:if="{{notifications.length}}">
+      <block wx:for="{{notifications}}" wx:key="id">
+        <view class="list-card">
+          <view class="list-card-title">{{item.displayType}}</view>
+          <view class="chip-row">
+            <view class="tag-chip tag-primary">{{item.displayStatus}}</view>
+          </view>
+          <view class="meta">内容：{{item.content}}</view>
+          <view class="meta">创建时间：{{item.displayCreatedAt}}</view>
+          <view class="meta">发送时间：{{item.displaySentAt}}</view>
+          <view class="meta" wx:if="{{item.failureReason}}">失败原因：{{item.failureReason}}</view>
+        </view>
+      </block>
+    </block>
+    <view wx:else class="empty-state">当前还没有消息提醒记录。</view>
+  </view>
+</view>
